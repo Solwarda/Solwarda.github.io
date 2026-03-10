@@ -302,8 +302,8 @@ providers:
     # 使用国内镜像
     cdn: https://cdn.jsdelivr.net
     # Name or URL template of the webfont CDN provider
-    # 完全禁用 Google Fonts，使用系统默认字体
-    fontcdn: false
+    # 禁用 Google Fonts（留空使用系统字体）
+    fontcdn: ""
     # Name or URL of the fontawesome icon font CDN provider
     # 使用国内镜像
     iconcdn: https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0
