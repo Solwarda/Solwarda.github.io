@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>My Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="My Blog"><meta name="msapplication-TileImage" content="/img/favicon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="My Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="记录学习与生活"><meta property="og:type" content="blog"><meta property="og:title" content="My Blog"><meta property="og:url" content="https://solwarda.github.io/"><meta property="og:site_name" content="My Blog"><meta property="og:description" content="记录学习与生活"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://solwarda.github.io/img/og_image.png"><meta property="article:author" content="Solwarda"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://solwarda.github.io/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://Solwarda.github.io"},"headline":"My Blog","image":["https://solwarda.github.io/img/og_image.png"],"author":{"@type":"Person","name":"Solwarda"},"publisher":{"@type":"Organization","name":"My Blog","logo":{"@type":"ImageObject","url":"https://solwarda.github.io/img/logo.svg"}},"description":"记录学习与生活"}</script><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0"><link data-pjax rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href=""><link data-pjax rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net"><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 8.1.2"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item is-active" href="/">首页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-05-29T10:02:09.329Z" title="2026/5/29 18:02:09">2026-05-29</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:02:09.330Z" title="2026/5/29 18:02:09">2026-05-29</time>更新</span><span class="level-item">2 分钟读完 (大约327个字)</span></div></div><div class="content"><p>以下是为银河麒麟 V10（ARM64）系统安装 Tailscale 并配置开机自启的完整步骤总结文档，可直接复制保存为 <code>.md</code> 文件。</p>
+<figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># 银河麒麟 V10 (ARM64) 安装 Tailscale 并配置开机自启</span><br><br><span class="hljs-section">## 1. 下载并安装 Tailscale 静态二进制文件</span><br><br><span class="hljs-code">```bash</span><br><span class="hljs-code"># 下载适用于 ARM64 的静态二进制包（以 v1.70.0 为例，请根据实际版本调整）</span><br><span class="hljs-code">wget https://pkgs.tailscale.com/stable/tailscale_1.70.0_arm64.tgz</span><br><span class="hljs-code"></span><br><span class="hljs-code"># 解压</span><br><span class="hljs-code">tar xzvf tailscale_1.70.0_arm64.tgz</span><br><span class="hljs-code"></span><br><span class="hljs-code"># 进入解压目录并复制二进制文件到系统路径</span><br><span class="hljs-code">cd tailscale_1.70.0_arm64</span><br><span class="hljs-code">sudo cp tailscale tailscaled /usr/local/bin/</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="2-首次手动启动并完成认证（仅第一次需要）"><a href="#2-首次手动启动并完成认证（仅第一次需要）" class="headerlink" title="2. 首次手动启动并完成认证（仅第一次需要）"></a>2. 首次手动启动并完成认证（仅第一次需要）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动 tailscaled 守护进程（前台后台均可，这里后台运行）</span><br><span class="hljs-built_in">sudo</span> tailscaled --state=/var/lib/tailscale/tailscaled.state &amp;<br><br><span class="hljs-comment"># 等待 2-3 秒后执行认证，会输出一个登录链接</span><br><span class="hljs-built_in">sudo</span> tailscale up<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>复制终端输出的链接到浏览器，使用 Microsoft、Google 或 GitHub 账号登录授权。</li>
+<li>成功后终端会显示 <code>Success</code>。</li>
+</ul>
+<h2 id="3-创建-systemd-服务文件（实现开机自启）"><a href="#3-创建-systemd-服务文件（实现开机自启）" class="headerlink" title="3. 创建 systemd 服务文件（实现开机自启）"></a>3. 创建 systemd 服务文件（实现开机自启）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/systemd/system/tailscaled.service &gt; /dev/null &lt;&lt;<span class="hljs-string">EOF</span><br><span class="hljs-string">[Unit]</span><br><span class="hljs-string">Description=Tailscale node agent</span><br><span class="hljs-string">Documentation=https://tailscale.com/kb/</span><br><span class="hljs-string">Wants=network-pre.target</span><br><span class="hljs-string">After=network-pre.target NetworkManager.service systemd-resolved.service</span><br><span class="hljs-string"></span><br><span class="hljs-string">[Service]</span><br><span class="hljs-string">ExecStart=/usr/local/bin/tailscaled --state=/var/lib/tailscale/tailscaled.state</span><br><span class="hljs-string">ExecStopPost=/usr/local/bin/tailscaled --cleanup</span><br><span class="hljs-string">Restart=on-failure</span><br><span class="hljs-string">RestartSec=5</span><br><span class="hljs-string">LimitNOFILE=65536</span><br><span class="hljs-string">PrivateTmp=true</span><br><span class="hljs-string">ProtectSystem=full</span><br><span class="hljs-string">NoNewPrivileges=true</span><br><span class="hljs-string"></span><br><span class="hljs-string">[Install]</span><br><span class="hljs-string">WantedBy=multi-user.target</span><br><span class="hljs-string">EOF</span><br></code></pre></td></tr></table></figure>
+
+<h2 id="4-停止手动运行的-tailscaled-进程（如有）"><a href="#4-停止手动运行的-tailscaled-进程（如有）" class="headerlink" title="4. 停止手动运行的 tailscaled 进程（如有）"></a>4. 停止手动运行的 tailscaled 进程（如有）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> pkill tailscaled<br></code></pre></td></tr></table></figure>
+
+<h2 id="5-启用-systemd-服务并设置开机自启"><a href="#5-启用-systemd-服务并设置开机自启" class="headerlink" title="5. 启用 systemd 服务并设置开机自启"></a>5. 启用 systemd 服务并设置开机自启</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> systemctl daemon-reload<br><span class="hljs-built_in">sudo</span> systemctl <span class="hljs-built_in">enable</span> --now tailscaled<br></code></pre></td></tr></table></figure>
+
+<h2 id="6-验证服务状态"><a href="#6-验证服务状态" class="headerlink" title="6. 验证服务状态"></a>6. 验证服务状态</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> systemctl status tailscaled<br></code></pre></td></tr></table></figure>
+
+<p>应显示 <code>Active: active (running)</code>。</p>
+<h2 id="7-验证-Tailscale-连接"><a href="#7-验证-Tailscale-连接" class="headerlink" title="7. 验证 Tailscale 连接"></a>7. 验证 Tailscale 连接</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">tailscale status<br>tailscale ip<br></code></pre></td></tr></table></figure>
+
+<ul>
+<li>如果显示 Tailscale IP（如 <code>100.x.y.z</code>）且状态为 <code>active</code>，说明配置成功。</li>
+</ul>
+<h2 id="日常管理命令"><a href="#日常管理命令" class="headerlink" title="日常管理命令"></a>日常管理命令</h2><table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>查看连接状态</td>
+<td><code>tailscale status</code></td>
+</tr>
+<tr>
+<td>查看本机 IP</td>
+<td><code>tailscale ip</code></td>
+</tr>
+<tr>
+<td>断开 Tailscale</td>
+<td><code>sudo tailscale down</code></td>
+</tr>
+<tr>
+<td>重新连接</td>
+<td><code>sudo tailscale up</code></td>
+</tr>
+<tr>
+<td>重启 tailscaled 服务</td>
+<td><code>sudo systemctl restart tailscaled</code></td>
+</tr>
+<tr>
+<td>查看服务日志</td>
+<td><code>journalctl -u tailscaled -f</code></td>
+</tr>
+</tbody></table>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><ul>
+<li>认证信息保存在 <code>/var/lib/tailscale/tailscaled.state</code>，只需首次 <code>tailscale up</code>，之后守护进程会自动读取。</li>
+<li>两台电脑都安装 Tailscale 后，可以使用对方的 Tailscale IP 直接 SSH：<code>ssh user@&lt;对方TailscaleIP&gt;</code></li>
+<li>如需启用 Tailscale 自带的 SSH 功能，可运行 <code>sudo tailscale up --ssh</code>（可选）。</li>
+</ul>
+<pre><code>
+直接复制以上内容保存为 `tailscale_install_guide.md` 即可。
+</code></pre>
+</div></article></div><div class="card"><div class="card-image"><a class="image is-7by3" href="/2026/05/29/blog-s01-agent-loop/"><img class="fill" src="/img/agent-loop-cover.png" alt="解码 AI 编码智能体的核心：Agent Loop"></a></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-05-29T09:30:00.000Z" title="2026/5/29 17:30:00">2026-05-29</time>发表</span><span class="level-item"><time dateTime="2026-05-29T09:37:37.548Z" title="2026/5/29 17:37:37">2026-05-29</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a><span> / </span><a class="link-muted" href="/categories/AI/%E7%BC%96%E7%A8%8B/">编程</a></span><span class="level-item">14 分钟读完 (大约2142个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/05/29/blog-s01-agent-loop/">解码 AI 编码智能体的核心：Agent Loop</a></p><div class="content"><h1 id="解码-AI-编码智能体的核心：Agent-Loop"><a href="#解码-AI-编码智能体的核心：Agent-Loop" class="headerlink" title="解码 AI 编码智能体的核心：Agent Loop"></a>解码 AI 编码智能体的核心：Agent Loop</h1><blockquote>
+<p>本文是 <code>learn-claude-code</code> 项目的第一次学习记录。整个项目通过 20 个由浅入深的示例，一步步揭示 Claude Code（Anthropic 的 AI 编码智能体）的内部机制。</p>
+</blockquote>
+<hr>
+<h2 id="一、开篇：一个疑问"><a href="#一、开篇：一个疑问" class="headerlink" title="一、开篇：一个疑问"></a>一、开篇：一个疑问</h2><p>Claude Code 能在终端里听懂你的自然语言需求，自主地执行 shell 命令、读写文件、调试代码、甚至提交 PR。这看起来像魔法。</p>
+<p>但魔法背后是什么？</p>
+<p>带着这个疑问，我打开了这个项目的第一课：<strong><code>s01_agent_loop</code></strong>。</p>
+<p>项目地址：<a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">learn-claude-code</a>（Anthropic 官方出品）</p>
+<hr>
+<h2 id="二、核心洞察：模式比实现更惊人"><a href="#二、核心洞察：模式比实现更惊人" class="headerlink" title="二、核心洞察：模式比实现更惊人"></a>二、核心洞察：模式比实现更惊人</h2><p>整个 AI 编码智能体的秘密，<strong>用一张图就能说清</strong>：</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">+----------+      +-------+      +---------+<br>|<span class="hljs-string">   User   </span>|<span class="hljs-string"> ---&gt; </span>|<span class="hljs-string">  LLM  </span>|<span class="hljs-string"> ---&gt; </span>|<span class="hljs-string">  Tool   </span>|<br>|<span class="hljs-string">  prompt  </span>|<span class="hljs-string">      </span>|<span class="hljs-string">       </span>|<span class="hljs-string">      </span>|<span class="hljs-string"> execute </span>|<br>+----------+      +---+---+      +----+----+<br>                      ^               |<span class="hljs-string"></span><br><span class="hljs-string">                      </span>|<span class="hljs-string">   tool_result </span>|<br>                      +---------------+<br>                      (loop continues)<br></code></pre></td></tr></table></figure>
+
+<p>用代码表达，核心就几行：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">while</span> stop_reason == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>    response = LLM(messages, tools)<br>    execute tools<br>    append results back to messages<br></code></pre></td></tr></table></figure>
+
+<p><strong>所有复杂的产品能力——策略控制、生命周期管理、错误恢复——都是在这个循环上叠加的图层。</strong></p>
+<hr>
+<h2 id="三、代码解剖：208-行的完整-Agent"><a href="#三、代码解剖：208-行的完整-Agent" class="headerlink" title="三、代码解剖：208 行的完整 Agent"></a>三、代码解剖：208 行的完整 Agent</h2><p><code>s01_agent_loop/code.py</code> 只有 <strong>208 行</strong>，却实现了一个完整可运行的 AI 编码智能体。我们来逐层拆解。</p>
+<h3 id="3-1-环境准备（第-30-55-行）"><a href="#3-1-环境准备（第-30-55-行）" class="headerlink" title="3.1 环境准备（第 30-55 行）"></a>3.1 环境准备（第 30-55 行）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> anthropic <span class="hljs-keyword">import</span> Anthropic<br><span class="hljs-keyword">from</span> dotenv <span class="hljs-keyword">import</span> load_dotenv<br><br>load_dotenv(override=<span class="hljs-literal">True</span>)<br>client = Anthropic(base_url=os.getenv(<span class="hljs-string">&quot;ANTHROPIC_BASE_URL&quot;</span>))<br>MODEL = os.environ[<span class="hljs-string">&quot;MODEL_ID&quot;</span>]<br>SYSTEM = <span class="hljs-string">f&quot;You are a coding agent at <span class="hljs-subst">&#123;os.getcwd()&#125;</span>. Use bash to solve tasks. Act, don&#x27;t explain.&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>关键细节：</p>
+<ul>
+<li>通过 <code>.env</code> 文件加载配置，灵活切换 API 端点</li>
+<li>System Prompt 只有一句话：<strong>“Use bash to solve tasks. Act, don’t explain.”</strong>——这正是 Claude Code 的简洁高效哲学</li>
+<li>注意一个巧妙的兼容处理（第 49-50 行）：当使用非官方端点时，移除 <code>ANTHROPIC_AUTH_TOKEN</code>，避免与自定义 base URL 冲突</li>
+</ul>
+<blockquote>
+<p>值得一提的是代码中还包含了对 <code>readline</code> 的 macOS 兼容处理（第 32-42 行），专门修复了 libedit 在处理中文输入时的退格问题——这种细腻的细节遍布整个代码库。</p>
+</blockquote>
+<h3 id="3-2-工具定义（第-58-66-行）"><a href="#3-2-工具定义（第-58-66-行）" class="headerlink" title="3.2 工具定义（第 58-66 行）"></a>3.2 工具定义（第 58-66 行）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs python">TOOLS = [&#123;<br>    <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;bash&quot;</span>,<br>    <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<br>        <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>,<br>        <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;command&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;&#125;,<br>        <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;command&quot;</span>],<br>    &#125;,<br>&#125;]<br></code></pre></td></tr></table></figure>
+
+<p>智能体只有一个工具：<strong>bash</strong>。赋予 AI 执行 shell 命令的能力，就打开了无限可能——文件操作、代码运行、网络请求、Git 操作，全都可以通过命令行完成。</p>
+<p>这就是”小工具，大作为”的设计理念。</p>
+<h3 id="3-3-工具执行与安全（第-70-82-行）"><a href="#3-3-工具执行与安全（第-70-82-行）" class="headerlink" title="3.3 工具执行与安全（第 70-82 行）"></a>3.3 工具执行与安全（第 70-82 行）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">run_bash</span>(<span class="hljs-params">command: <span class="hljs-built_in">str</span></span>) -&gt; <span class="hljs-built_in">str</span>:<br>    dangerous = [<span class="hljs-string">&quot;rm -rf /&quot;</span>, <span class="hljs-string">&quot;sudo&quot;</span>, <span class="hljs-string">&quot;shutdown&quot;</span>, <span class="hljs-string">&quot;reboot&quot;</span>, <span class="hljs-string">&quot;&gt; /dev/&quot;</span>]<br>    <span class="hljs-keyword">if</span> <span class="hljs-built_in">any</span>(d <span class="hljs-keyword">in</span> command <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> dangerous):<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Error: Dangerous command blocked&quot;</span><br>    <span class="hljs-keyword">try</span>:<br>        r = subprocess.run(command, shell=<span class="hljs-literal">True</span>, cwd=os.getcwd(),<br>                           capture_output=<span class="hljs-literal">True</span>, text=<span class="hljs-literal">True</span>, timeout=<span class="hljs-number">120</span>)<br>        out = (r.stdout + r.stderr).strip()<br>        <span class="hljs-keyword">return</span> out[:<span class="hljs-number">50000</span>] <span class="hljs-keyword">if</span> out <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;(no output)&quot;</span><br>    <span class="hljs-keyword">except</span> subprocess.TimeoutExpired:<br>        <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;Error: Timeout (120s)&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>这段代码体现了几个重要的工程考量：</p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>黑名单过滤</strong></td>
+<td>阻止 <code>rm -rf /</code>、<code>sudo</code> 等危险命令</td>
+</tr>
+<tr>
+<td><strong>120 秒超时</strong></td>
+<td>防止命令永久挂起</td>
+</tr>
+<tr>
+<td><strong>输出截断（50KB）</strong></td>
+<td>避免模型上下文被海量输出撑爆</td>
+</tr>
+<tr>
+<td><strong>返回错误而非抛异常</strong></td>
+<td>让 LLM 自己决定如何应对错误</td>
+</tr>
+</tbody></table>
+<p>最后一点尤其关键：<strong>AI 智能体的错误处理哲学不是”崩溃后重启”，而是”把错误信息喂回模型，让它自己修正”。</strong></p>
+<h3 id="3-4-核心循环（第-86-184-行）——-真正的精华"><a href="#3-4-核心循环（第-86-184-行）——-真正的精华" class="headerlink" title="3.4 核心循环（第 86-184 行）—— 真正的精华"></a>3.4 核心循环（第 86-184 行）—— 真正的精华</h3><p><code>agent_loop()</code> 函数是这个文件的心脏。让我们看它的完整流程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages: <span class="hljs-built_in">list</span></span>):<br>    loop_count = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        loop_count += <span class="hljs-number">1</span><br><br>        <span class="hljs-comment"># 1. 调用模型</span><br>        response = client.messages.create(<br>            model=MODEL, system=SYSTEM, messages=messages,<br>            tools=TOOLS, max_tokens=<span class="hljs-number">8000</span>,<br>        )<br><br>        <span class="hljs-comment"># 2. 追加 assistant 的回复到消息历史</span><br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;assistant&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: response.content&#125;)<br><br>        <span class="hljs-comment"># 3. 如果模型没有调用工具，结束循环</span><br>        <span class="hljs-keyword">if</span> response.stop_reason != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>            <span class="hljs-keyword">return</span><br><br>        <span class="hljs-comment"># 4. 执行所有工具调用</span><br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                output = run_bash(block.<span class="hljs-built_in">input</span>[<span class="hljs-string">&quot;command&quot;</span>])<br>                results.append(&#123;<br>                    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;tool_result&quot;</span>,<br>                    <span class="hljs-string">&quot;tool_use_id&quot;</span>: block.<span class="hljs-built_in">id</span>,<br>                    <span class="hljs-string">&quot;content&quot;</span>: output,<br>                &#125;)<br><br>        <span class="hljs-comment"># 5. 将工具结果送回模型，继续循环</span><br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: results&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>每一轮循环的流程：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">用户输入 → <span class="hljs-keyword">LLM </span>推理 → 是否调用工具？<br>    ├─ 否 → 返回最终回答 ✓<br>    └─ 是 → 执行 <span class="hljs-keyword">bash </span>→ 结果送回 <span class="hljs-keyword">LLM </span>→ 继续循环<br></code></pre></td></tr></table></figure>
+
+<p>这个模式的名字叫 <strong>ReAct（Reasoning + Acting）</strong>，是当前所有主流 AI Agent 框架（LangChain、Vercel AI SDK、AutoGPT 等）的基础模式。</p>
+<h3 id="3-5-调试输出：看得见的思考过程"><a href="#3-5-调试输出：看得见的思考过程" class="headerlink" title="3.5 调试输出：看得见的思考过程"></a>3.5 调试输出：看得见的思考过程</h3><p>这个示例的一个亮点是丰富的调试打印。每轮循环它都会输出：</p>
+<ol>
+<li><strong>发送给模型的 Messages</strong>——完整展示当前上下文</li>
+<li><strong>模型返回摘要</strong>——模型 ID、stop_reason、content block 类型</li>
+<li><strong>完整 JSON</strong>——供深入分析的原始响应</li>
+</ol>
+<p>实际运行的效果大致如下：</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs vim">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>  📤 发送给模型的 <span class="hljs-keyword">messages</span> (循环第 <span class="hljs-number">1</span> 轮)<br>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>  <span class="hljs-keyword">messages</span> 共 <span class="hljs-number">1</span> 条:<br>    [<span class="hljs-number">0</span>] role=user       | 当前目录下code.<span class="hljs-keyword">py</span> 有多少行代码...<br><br>────────────────────────────────────────────────────────────<br>  📡 模型返回 (循环第 <span class="hljs-number">1</span> 轮)<br>────────────────────────────────────────────────────────────<br>  stop_reason:   tool_use<br>  content[<span class="hljs-number">0</span>]:<br>    <span class="hljs-built_in">type</span>: tool_use<br>    name: bash<br>    <span class="hljs-built_in">input</span>: &#123;<span class="hljs-string">&quot;command&quot;</span>: <span class="hljs-string">&quot;wc -l code.py&quot;</span>&#125;<br><br>$ wc -<span class="hljs-keyword">l</span> code.<span class="hljs-keyword">py</span><br><span class="hljs-number">208</span> s01_agent_loop/code.<span class="hljs-keyword">py</span><br><br>  🔄 stop_reason=<span class="hljs-string">&#x27;tool_use&#x27;</span> → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
+
+<p>这种透明化的设计对学习和调试非常有价值——你能清楚地看到 AI 的每一步思考和行为。</p>
+<h3 id="3-6-交互界面（第-188-208-行）"><a href="#3-6-交互界面（第-188-208-行）" class="headerlink" title="3.6 交互界面（第 188-208 行）"></a>3.6 交互界面（第 188-208 行）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;s01: Agent Loop&quot;</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;输入问题，回车发送。输入 q 退出。\n&quot;</span>)<br><br>    history = []<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        query = <span class="hljs-built_in">input</span>(<span class="hljs-string">&quot;s01 &gt;&gt; &quot;</span>)<br>        <span class="hljs-keyword">if</span> query.strip().lower() <span class="hljs-keyword">in</span> (<span class="hljs-string">&quot;q&quot;</span>, <span class="hljs-string">&quot;exit&quot;</span>, <span class="hljs-string">&quot;&quot;</span>):<br>            <span class="hljs-keyword">break</span><br>        history.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: query&#125;)<br>        agent_loop(history)<br></code></pre></td></tr></table></figure>
+
+<p>一个简洁的 REPL（Read-Eval-Print Loop）界面。每次对话保留完整历史，所以模型能”记住”之前的对话。</p>
+<hr>
+<h2 id="四、动手实验：和智能体对话"><a href="#四、动手实验：和智能体对话" class="headerlink" title="四、动手实验：和智能体对话"></a>四、动手实验：和智能体对话</h2><p>我启动程序后问了一个问题：</p>
+<blockquote>
+<p><strong>我：</strong> 当前目录下 code.py 有多少行代码，主要功能是什么？</p>
+</blockquote>
+<p>AI 智能体的行为：</p>
+<ol>
+<li><strong>识别到需要执行命令</strong> → 调用 <code>bash</code> 工具执行 <code>wc -l code.py</code></li>
+<li><strong>工具返回 208 行</strong> → 但 <code>find</code> 发现了更多 code.py 文件</li>
+<li><strong>进一步探索</strong> → 再次调用 bash 查找所有文件</li>
+<li><strong>给出最终回答</strong> → 总结代码行数及功能</li>
+</ol>
+<p>整个过程完全自主完成，我只需要说一句话。</p>
+<p>这就是 Agent Loop 的威力：<strong>人类给方向，AI 负责执行路径上的所有细节决策。</strong></p>
+<hr>
+<h2 id="五、关键收获"><a href="#五、关键收获" class="headerlink" title="五、关键收获"></a>五、关键收获</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>洞察</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>核心模式</strong></td>
+<td>Agent 的本质是一个 <code>while</code> 循环：LLM 调用 → 工具执行 → 结果回馈</td>
+</tr>
+<tr>
+<td><strong>工具是能力的边界</strong></td>
+<td>给 AI 什么工具，它就有什么能力。一个 bash 工具 &#x3D; 无限可能</td>
+</tr>
+<tr>
+<td><strong>错误处理</strong></td>
+<td>不是 try-catch 隐藏错误，而是把错误给 LLM 让它自己修复</td>
+</tr>
+<tr>
+<td><strong>透明 &gt; 黑盒</strong></td>
+<td>打印每一轮循环的细节，让开发者理解 AI 的决策过程</td>
+</tr>
+<tr>
+<td><strong>简洁的力量</strong></td>
+<td>208 行代码实现了一个完整可用的 Agent。复杂不等于强大</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、下期预告"><a href="#六、下期预告" class="headerlink" title="六、下期预告"></a>六、下期预告</h2><p>第二课 <code>s02_tool_use</code> 将深入探讨<strong>工具调用的细节</strong>——模型如何选择工具、如何传递参数、如何处理多个工具调用的并行执行。</p>
+<p>一个模式一旦理解，剩下的就是丰富它的细节。</p>
+<hr>
+<p><em>本文是 <code>learn-claude-code</code> 学习系列的第一篇。所有代码均来自 <a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">Anthropic 官方仓库</a>。</em></p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-12T16:00:00.000Z" title="2026/3/13 00:00:00">2026-03-13</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:02:00.518Z" title="2026/5/29 18:02:00">2026-05-29</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></span><span class="level-item">9 分钟读完 (大约1403个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/13/openclaw-http-api-guide---e5d65f02-f53e-4f66-980b-48c87fca1282/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><div class="content"><h1 id="OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索"><a href="#OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索" class="headerlink" title="OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索"></a>OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文记录了我探索 OpenClaw HTTP API 的全过程，包括如何启用 API、进行文本对话，以及最终实现文件上传功能。特别深入分析了文件上传的各种尝试和踩坑经历。</p>
+<hr>
+<h2 id="一、启用-OpenClaw-HTTP-API"><a href="#一、启用-OpenClaw-HTTP-API" class="headerlink" title="一、启用 OpenClaw HTTP API"></a>一、启用 OpenClaw HTTP API</h2><p>首先需要修改 OpenClaw 配置文件 <code>~/.openclaw/config.json</code>，启用 responses API：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;http&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;endpoints&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;responses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;enabled&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p>配置说明：</p>
+<ul>
+<li><code>gateway.http.endpoints.responses.enabled</code>: 启用 <code>/v1/responses</code> 端点</li>
+<li>默认端口为 <code>18789</code></li>
+<li>支持 OpenResponses API 格式</li>
+</ul>
+<hr>
+<h2 id="二、基础文本对话"><a href="#二、基础文本对话" class="headerlink" title="二、基础文本对话"></a>二、基础文本对话</h2><h3 id="最简单的文本请求格式"><a href="#最简单的文本请求格式" class="headerlink" title="最简单的文本请求格式"></a>最简单的文本请求格式</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">TOKEN=<span class="hljs-string">&quot;your_token_here&quot;</span><br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \<br>    -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> \<br>    -H <span class="hljs-string">&quot;x-openclaw-agent-id: main&quot;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: &quot;请用 Python 写一个冒泡排序算法&quot;</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>成功响应</strong>：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;id&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;resp_xxxx&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;object&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;response&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;completed&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;model&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;openclaw&quot;</span><span class="hljs-punctuation">,</span><br>  <span class="hljs-attr">&quot;output&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>...<span class="hljs-punctuation">]</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="三、文件上传的探索历程"><a href="#三、文件上传的探索历程" class="headerlink" title="三、文件上传的探索历程"></a>三、文件上传的探索历程</h2><h3 id="阶段-1：尝试简化格式（失败）"><a href="#阶段-1：尝试简化格式（失败）" class="headerlink" title="阶段 1：尝试简化格式（失败）"></a>阶段 1：尝试简化格式（失败）</h3><p>最初尝试将文件内容直接嵌入到 <code>input</code> 字符串中：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \<br>    -d <span class="hljs-string">&quot;&#123;</span><br><span class="hljs-string">      \&quot;model\&quot;: \&quot;openclaw\&quot;,</span><br><span class="hljs-string">      \&quot;input\&quot;: \&quot;请分析这个文件：\n\n<span class="hljs-subst">$(cat sample-data.txt)</span>\&quot;</span><br><span class="hljs-string">    &#125;&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>结果</strong>：✅ 可以工作，但不是标准的文件上传方式，不适合图片或二进制文件。</p>
+<hr>
+<h3 id="阶段-2：尝试标准-input-file-格式（失败）"><a href="#阶段-2：尝试标准-input-file-格式（失败）" class="headerlink" title="阶段 2：尝试标准 input_file 格式（失败）"></a>阶段 2：尝试标准 input_file 格式（失败）</h3><p>参考 OpenAI API 文档，尝试使用 <code>input_file</code> 类型：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs bash">FILE_BASE64=$(<span class="hljs-built_in">base64</span> -w 0 sample-data.txt)<br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: &quot;请分析...&quot;</span><br><span class="hljs-string">        &#125;,</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">          &quot;source&quot;: &#123;</span><br><span class="hljs-string">            &quot;type&quot;: &quot;base64&quot;,</span><br><span class="hljs-string">            &quot;media_type&quot;: &quot;text/plain&quot;,</span><br><span class="hljs-string">            &quot;data&quot;: &quot;&#x27;</span><span class="hljs-string">&quot;<span class="hljs-variable">$FILE_BASE64</span>&quot;</span><span class="hljs-string">&#x27;&quot;</span><br><span class="hljs-string">          &#125;</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>结果</strong>：❌ 返回 <code>{&quot;error&quot;:{&quot;message&quot;:&quot;Unauthorized&quot;,&quot;type&quot;:&quot;unauthorized&quot;}}</code></p>
+<p><strong>问题分析</strong>：</p>
+<ul>
+<li>错误地将 <code>input_file</code> 放在了 <code>input</code> 数组中作为独立 item</li>
+<li>实际上 <code>input_file</code> 应该是 <code>content</code> 数组中的一部分</li>
+</ul>
+<hr>
+<h3 id="阶段-3：正确的文件上传格式（成功）"><a href="#阶段-3：正确的文件上传格式（成功）" class="headerlink" title="阶段 3：正确的文件上传格式（成功）"></a>阶段 3：正确的文件上传格式（成功）</h3><p>通过阅读 OpenClaw 源码（<code>open-responses.schema.ts</code> 和 <code>openresponses-http.ts</code>），理解了正确的数据结构：</p>
+<figure class="highlight nim"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs nim">input (<span class="hljs-type">Array</span>)<br>  └── <span class="hljs-type">Item</span> (<span class="hljs-type">Object</span>)<br>        ├── <span class="hljs-keyword">type</span>: <span class="hljs-string">&quot;message&quot;</span><br>        ├── role: <span class="hljs-string">&quot;user&quot;</span><br>        └── content (<span class="hljs-type">Array</span>)  ← 必须是数组！<br>              ├── &#123;<span class="hljs-keyword">type</span>: <span class="hljs-string">&quot;input_text&quot;</span>, text: <span class="hljs-string">&quot;...&quot;</span>&#125;<br>              └── &#123;<span class="hljs-keyword">type</span>: <span class="hljs-string">&quot;input_file&quot;</span>, source: <span class="hljs-meta">&#123;...&#125;</span>&#125;  ← 文件在这里<br></code></pre></td></tr></table></figure>
+
+<p><strong>正确的请求格式</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs bash">FILE_BASE64=$(<span class="hljs-built_in">base64</span> -w 0 sample-data.txt)<br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer YOUR_TOKEN&#x27;</span> \<br>    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \<br>    -H <span class="hljs-string">&#x27;x-openclaw-agent-id: main&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_text&quot;,</span><br><span class="hljs-string">              &quot;text&quot;: &quot;请分析这个销售数据报告&quot;</span><br><span class="hljs-string">            &#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;base64&quot;,</span><br><span class="hljs-string">                &quot;media_type&quot;: &quot;text/plain&quot;,</span><br><span class="hljs-string">                &quot;data&quot;: &quot;&#x27;</span><span class="hljs-string">&quot;<span class="hljs-variable">$FILE_BASE64</span>&quot;</span><span class="hljs-string">&#x27;&quot;,</span><br><span class="hljs-string">                &quot;filename&quot;: &quot;sample-data.txt&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>关键要点</strong>：</p>
+<ol>
+<li><code>input</code> 是数组，包含 <code>message</code> 类型的对象</li>
+<li><code>message.content</code> 必须是数组（不是字符串）</li>
+<li><code>input_file</code> 是 <code>content</code> 数组中的 part，不是独立的 item</li>
+</ol>
+<hr>
+<h3 id="阶段-4：尝试-URL-方式上传（失败）"><a href="#阶段-4：尝试-URL-方式上传（失败）" class="headerlink" title="阶段 4：尝试 URL 方式上传（失败）"></a>阶段 4：尝试 URL 方式上传（失败）</h3><p>尝试通过本地 HTTP 服务器提供文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动本地服务器</span><br>python3 -m http.server 8080 &amp;<br><br><span class="hljs-comment"># 尝试通过 URL 访问</span><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer YOUR_TOKEN&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_text&quot;,</span><br><span class="hljs-string">              &quot;text&quot;: &quot;请分析这个销售数据报告&quot;</span><br><span class="hljs-string">            &#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;url&quot;,</span><br><span class="hljs-string">                &quot;url&quot;: &quot;http://localhost:8080/sample-data.txt&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>结果</strong>：❌ 返回 <code>{&quot;error&quot;:{&quot;message&quot;:&quot;invalid request&quot;,&quot;type&quot;:&quot;invalid_request_error&quot;}}</code></p>
+<p><strong>原因分析</strong>（通过阅读源码）：</p>
+<p>在 <code>input-files.ts</code> 中，<code>fetchWithGuard</code> 函数配置了 SSRF 防护：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-attr">policy</span>: &#123;<br>  <span class="hljs-attr">allowPrivateNetwork</span>: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// 硬编码，禁止私有网络</span><br>  <span class="hljs-attr">hostnameAllowlist</span>: limits.<span class="hljs-property">urlAllowlist</span>,<br>&#125;<br></code></pre></td></tr></table></figure>
+
+<p>私有网络地址（<code>localhost</code>, <code>127.0.0.1</code>, <code>192.168.x.x</code> 等）都会被阻止。</p>
+<p>在 <code>ssrf.ts</code> 中定义了被禁止的主机名：</p>
+<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">BLOCKED_HOSTNAMES</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Set</span>([<br>  <span class="hljs-string">&quot;localhost&quot;</span>,<br>  <span class="hljs-string">&quot;localhost.localdomain&quot;</span>,<br>  <span class="hljs-string">&quot;metadata.google.internal&quot;</span>,<br>]);<br></code></pre></td></tr></table></figure>
+
+<p><strong>结论</strong>：OpenClaw 为了安全考虑，禁止通过 URL 访问本地或私有网络资源，防止 SSRF 攻击。</p>
+<hr>
+<h2 id="四、可配置项"><a href="#四、可配置项" class="headerlink" title="四、可配置项"></a>四、可配置项</h2><p>虽然无法解除私有网络限制，但可以配置公网 URL 白名单：</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;http&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;endpoints&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;responses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;enabled&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;files&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;allowUrl&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;urlAllowlist&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;*.example.com&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;public-server.com&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;allowedMimes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;text/plain&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;application/pdf&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;maxBytes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">5242880</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;maxChars&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">200000</span><br>          <span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">,</span><br>          <span class="hljs-attr">&quot;images&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>            <span class="hljs-attr">&quot;allowUrl&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;urlAllowlist&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;*.example.com&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><br>            <span class="hljs-attr">&quot;maxBytes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">10485760</span><br>          <span class="hljs-punctuation">&#125;</span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：<code>urlAllowlist</code> 只对公网域名有效，无法绕过私有网络限制。</p>
+<hr>
+<h2 id="五、完整的解决方案"><a href="#五、完整的解决方案" class="headerlink" title="五、完整的解决方案"></a>五、完整的解决方案</h2><h3 id="1-文本文件上传（base64）"><a href="#1-文本文件上传（base64）" class="headerlink" title="1. 文本文件上传（base64）"></a>1. 文本文件上传（base64）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs bash">FILE_BASE64=$(<span class="hljs-built_in">base64</span> -w 0 /path/to/file.txt)<br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer TOKEN&#x27;</span> \<br>    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;&quot;type&quot;: &quot;input_text&quot;, &quot;text&quot;: &quot;分析这个文件&quot;&#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;base64&quot;,</span><br><span class="hljs-string">                &quot;media_type&quot;: &quot;text/plain&quot;,</span><br><span class="hljs-string">                &quot;data&quot;: &quot;&#x27;</span><span class="hljs-string">&quot;<span class="hljs-variable">$FILE_BASE64</span>&quot;</span><span class="hljs-string">&#x27;&quot;,</span><br><span class="hljs-string">                &quot;filename&quot;: &quot;file.txt&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="2-图片上传（base64）"><a href="#2-图片上传（base64）" class="headerlink" title="2. 图片上传（base64）"></a>2. 图片上传（base64）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs bash">IMG_BASE64=$(<span class="hljs-built_in">base64</span> -w 0 image.png)<br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer TOKEN&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;&quot;type&quot;: &quot;input_text&quot;, &quot;text&quot;: &quot;描述这张图片&quot;&#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_image&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;base64&quot;,</span><br><span class="hljs-string">                &quot;media_type&quot;: &quot;image/png&quot;,</span><br><span class="hljs-string">                &quot;data&quot;: &quot;&#x27;</span><span class="hljs-string">&quot;<span class="hljs-variable">$IMG_BASE64</span>&quot;</span><span class="hljs-string">&#x27;&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="3-公网-URL-文件（如果已配置白名单）"><a href="#3-公网-URL-文件（如果已配置白名单）" class="headerlink" title="3. 公网 URL 文件（如果已配置白名单）"></a>3. 公网 URL 文件（如果已配置白名单）</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer TOKEN&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;&quot;type&quot;: &quot;input_text&quot;, &quot;text&quot;: &quot;分析这个文档&quot;&#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;url&quot;,</span><br><span class="hljs-string">                &quot;url&quot;: &quot;https://example.com/document.pdf&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="六、经验总结"><a href="#六、经验总结" class="headerlink" title="六、经验总结"></a>六、经验总结</h2><table>
+<thead>
+<tr>
+<th>尝试</th>
+<th>结果</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>简化格式（字符串 input）</td>
+<td>✅ 成功</td>
+<td>仅适合简单文本</td>
+</tr>
+<tr>
+<td>错误放置 input_file</td>
+<td>❌ 失败</td>
+<td>位置错误导致 Unauthorized</td>
+</tr>
+<tr>
+<td>正确数组格式 + base64</td>
+<td>✅ <strong>推荐</strong></td>
+<td>通用解决方案</td>
+</tr>
+<tr>
+<td>URL 方式（localhost）</td>
+<td>❌ 失败</td>
+<td>SSRF 防护阻止</td>
+</tr>
+<tr>
+<td>URL 方式（公网）</td>
+<td>✅ 可能成功</td>
+<td>需配置白名单</td>
+</tr>
+</tbody></table>
+<p><strong>核心要点</strong>：</p>
+<ol>
+<li>理解数据结构层次：<code>input</code> → <code>message</code> → <code>content</code> → <code>input_file/input_image</code></li>
+<li>本地文件只能通过 base64 方式上传</li>
+<li>URL 方式仅适用于公网资源，且需要配置白名单</li>
+<li>OpenClaw 的 SSRF 防护是硬编码的，无法通过配置解除</li>
+</ol>
+<hr>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>OpenClaw 源码路径：<code>/tmp/openclaw/src/gateway/</code></li>
+<li>关键文件：<ul>
+<li><code>open-responses.schema.ts</code> - API Schema 定义</li>
+<li><code>openresponses-http.ts</code> - HTTP 请求处理</li>
+<li><code>media/input-files.ts</code> - 文件处理逻辑</li>
+<li><code>infra/net/ssrf.ts</code> - SSRF 防护实现</li>
+</ul>
+</li>
+</ul>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-10T16:00:00.000Z" title="2026/3/11 00:00:00">2026-03-11</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:01:35.796Z" title="2026/5/29 18:01:35">2026-05-29</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Docker/">Docker</a></span><span class="level-item">9 分钟读完 (大约1287个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution---6808f7f2-0ebc-41cd-bf01-d52b71d88653/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><div class="content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在麒麟（Kylin）ARM64 系统上使用 Docker 时，遇到了一系列问题。从最开始的代理配置，到拉取 Ubuntu 镜像时反复出现的 <code>archive/tar: invalid tar header</code> 错误，折腾了不少时间。本文将完整记录排查过程及最终解决方案，希望能帮助到遇到同样问题的朋友。</p>
+<hr>
+<h2 id="1-先跑通简单镜像：代理配置"><a href="#1-先跑通简单镜像：代理配置" class="headerlink" title="1. 先跑通简单镜像：代理配置"></a>1. 先跑通简单镜像：代理配置</h2><p>刚安装好 Docker，执行 <code>docker pull hello-world</code> 验证基础功能，却遇到错误：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ docker pull hello-world<br>Using default tag: latest<br>Error response from daemon: Get https://registry-1.docker.io/v2/: proxyconnect tcp: dial tcp 127.0.0.1:7890: connect: connection refused<br></code></pre></td></tr></table></figure>
+
+<p>很明显，这是代理配置缺失或指向错误。检查发现系统代理已设置但 Docker 未继承。临时设置环境变量后再次拉取：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">export</span> http_proxy=http://127.0.0.1:7890<br><span class="hljs-built_in">export</span> https_proxy=http://127.0.0.1:7890<br>docker pull hello-world<br></code></pre></td></tr></table></figure>
+
+<p>拉取成功：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs text">latest: Pulling from library/hello-world<br>198f93fd5094: Pull complete<br>Digest: sha256:ef54e839ef541993b4e87f25e752f7cf4238fa55f017957c2eb44077083d7a6a<br>Status: Downloaded newer image for hello-world:latest<br></code></pre></td></tr></table></figure>
+
+<p>此时查看已有镜像，只有 <code>hello-world</code>：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">$ docker images<br>REPOSITORY    TAG       IMAGE ID       CREATED         SIZE<br>hello-world   latest    ca9905c726f0   7 months ago    5.2kB<br></code></pre></td></tr></table></figure>
+
+<p>代理配置成功，基础功能正常。接下来尝试拉取实际可用的操作系统镜像。</p>
+<hr>
+<h2 id="2-噩梦开始：拉取-arm64v8-ubuntu-22-04-时反复出现-invalid-tar-header"><a href="#2-噩梦开始：拉取-arm64v8-ubuntu-22-04-时反复出现-invalid-tar-header" class="headerlink" title="2. 噩梦开始：拉取 arm64v8/ubuntu:22.04 时反复出现 invalid tar header"></a>2. 噩梦开始：拉取 <code>arm64v8/ubuntu:22.04</code> 时反复出现 <code>invalid tar header</code></h2><p>为了获得一个可交互的 ARM64 环境，我选择拉取官方 Ubuntu 22.04 ARM64 镜像：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker pull arm64v8/ubuntu:22.04<br></code></pre></td></tr></table></figure>
+
+<p>拉取进度到解压层时，突然报错：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">archive/tar: invalid tar header<br></code></pre></td></tr></table></figure>
+
+<p>多次重试、换用其他镜像（如 <code>arm64v8/alpine:3.18</code>）均在同一阶段失败。错误信息指向 tar 头部损坏，但镜像源本身是可靠的（在其他架构上正常）。</p>
+<h3 id="2-1-常规排查手段均无效"><a href="#2-1-常规排查手段均无效" class="headerlink" title="2.1 常规排查手段均无效"></a>2.1 常规排查手段均无效</h3><ul>
+<li><strong>清理 Docker 存储</strong>：<code>docker system prune -a</code>，删除 <code>/var/lib/docker</code> 后重启。</li>
+<li><strong>切换存储驱动</strong>：从 <code>overlay2</code> 改为 <code>aufs</code>、<code>devicemapper</code> 测试。</li>
+<li><strong>迁移数据目录</strong>：换到另一块磁盘。</li>
+<li><strong>重装 Docker</strong>：卸载后重新安装最新版。</li>
+</ul>
+<p>所有方法都无法解决问题，错误依旧。</p>
+<hr>
+<h2 id="3-真相大白：麒麟-ARM64-的-unpigz-是罪魁祸首"><a href="#3-真相大白：麒麟-ARM64-的-unpigz-是罪魁祸首" class="headerlink" title="3. 真相大白：麒麟 ARM64 的 unpigz 是罪魁祸首"></a>3. 真相大白：麒麟 ARM64 的 <code>unpigz</code> 是罪魁祸首</h2><p>在反复查阅 Docker 源码和社区讨论后，怀疑是镜像层解压环节出了问题。Docker 在解压 gzip 压缩的层时，会优先调用 <code>unpigz</code>（并行解压工具）以提高性能。如果系统中存在 <code>unpigz</code>，Docker 会使用它；否则回退到标准的 <code>gunzip</code>。</p>
+<p>在麒麟 ARM64 系统中，默认安装了 <code>unpigz</code>（由 <code>pigz</code> 包提供），但该 ARM64 版本的 <code>unpigz</code> 存在兼容性缺陷——解压后的 tar 流头部会损坏，导致 Docker 注册层失败。</p>
+<p>验证方法：直接用 <code>unpigz</code> 解压一个正常的 <code>.tar.gz</code> 文件，再对比 <code>gunzip</code> 的结果，发现 <code>unpigz</code> 解压后的 tar 文件头部确实损坏。</p>
+<h3 id="3-1-解决方案：移走-unpigz，强制-Docker-使用-gunzip"><a href="#3-1-解决方案：移走-unpigz，强制-Docker-使用-gunzip" class="headerlink" title="3.1 解决方案：移走 unpigz，强制 Docker 使用 gunzip"></a>3.1 解决方案：移走 <code>unpigz</code>，强制 Docker 使用 <code>gunzip</code></h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">mv</span> /usr/bin/unpigz /usr/bin/unpigz.bak<br></code></pre></td></tr></table></figure>
+
+<p>执行后，再次拉取 Ubuntu 镜像：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker pull arm64v8/ubuntu:22.04<br></code></pre></td></tr></table></figure>
+
+<p>这次所有层顺利解压，镜像拉取成功！趁热打铁，再拉取 Alpine 也顺利通过：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker pull arm64v8/alpine:3.18<br></code></pre></td></tr></table></figure>
+
+<p>现在查看镜像列表，所有目标镜像都已就位：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs text">$ docker images<br>REPOSITORY       TAG       IMAGE ID       CREATED         SIZE<br>arm64v8/ubuntu   22.04     68c5ac770760   2 months ago    69.3MB<br>hello-world      latest    ca9905c726f0   7 months ago    5.2kB<br>arm64v8/alpine   3.18      de2b9975f8fd   12 months ago   7.66MB<br></code></pre></td></tr></table></figure>
+
+<p>如果以后需要恢复 <code>unpigz</code>，只需改回原名：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">mv</span> /usr/bin/unpigz.bak /usr/bin/unpigz<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="4-进入容器的常用命令"><a href="#4-进入容器的常用命令" class="headerlink" title="4. 进入容器的常用命令"></a>4. 进入容器的常用命令</h2><p>有了镜像，自然想进入容器操作。记录一下常用的交互式启动命令：</p>
+<ul>
+<li><strong>Ubuntu 22.04</strong>：<code>docker run -it arm64v8/ubuntu:22.04 /bin/bash</code></li>
+<li><strong>Alpine 3.18</strong>：<code>docker run -it arm64v8/alpine:3.18 /bin/sh</code></li>
+</ul>
+<p>注意：<code>hello-world</code> 是测试镜像，启动后会立即退出，无法进入终端。</p>
+<hr>
+<h2 id="5-验证与最终命令"><a href="#5-验证与最终命令" class="headerlink" title="5. 验证与最终命令"></a>5. 验证与最终命令</h2><p>移走 <code>unpigz</code> 后，不仅 Ubuntu 可以正常拉取，之前失败的 Alpine 等镜像也全部成功。同时，代理配置依然有效。</p>
+<p>一个典型的带代理的交互式容器启动命令（适用于有代理环境的麒麟系统）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs bash">docker run -it --name ubuntu_claude \<br>  --net=host \<br>  -e http_proxy=http://192.168.8.156:7890 \<br>  -e https_proxy=http://192.168.8.156:7890 \<br>  arm64v8/ubuntu:22.04 \<br>  /bin/bash<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h2><ul>
+<li><strong>代理问题</strong>：Docker 拉取镜像时如需代理，需设置 <code>http_proxy</code>&#x2F;<code>https_proxy</code> 环境变量（或写入 Docker 服务配置）。</li>
+<li><strong>invalid tar header 错误</strong>：在麒麟 ARM64 系统上很可能是由 <code>unpigz</code> 的兼容性问题引起。重命名 <code>unpigz</code> 让 Docker 回退到 <code>gunzip</code> 即可完美解决。</li>
+<li><strong>副作用</strong>：移走 <code>unpigz</code> 不会影响系统其他功能，解压速度会稍有下降，但稳定性优先。</li>
+</ul>
+<p>希望本文能帮助遇到同样坑的朋友节省排查时间。如果你在麒麟或其他 ARM64 发行版上也有类似经历，欢迎交流讨论！</p>
+<hr>
+</div></article></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="Solwarda"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Solwarda</p><p class="is-size-6 is-block">个人博客</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives/"><p class="title">4</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories/"><p class="title">4</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags/"><p class="title">10</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Solwarda" target="_blank" rel="me noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/AI/%E7%BC%96%E7%A8%8B/"><span class="level-start"><span class="level-item">编程</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/"><span class="level-start"><span class="level-item">技术探索</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-05-29T10:02:09.329Z">2026-05-29</time></p><p class="title"><a href="/2026/05/29/tailScale---fb76d0a8-d711-487b-b26b-a7477e2681bf/"> </a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-05-29T09:30:00.000Z">2026-05-29</time></p><p class="title"><a href="/2026/05/29/blog-s01-agent-loop/">解码 AI 编码智能体的核心：Agent Loop</a></p><p class="categories"><a href="/categories/AI/">AI</a> / <a href="/categories/AI/%E7%BC%96%E7%A8%8B/">编程</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-12T16:00:00.000Z">2026-03-13</time></p><p class="title"><a href="/2026/03/13/openclaw-http-api-guide---e5d65f02-f53e-4f66-980b-48c87fca1282/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><p class="categories"><a href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-10T16:00:00.000Z">2026-03-11</time></p><p class="title"><a href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution---6808f7f2-0ebc-41cd-bf01-d52b71d88653/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><p class="categories"><a href="/categories/Docker/">Docker</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2026/05/"><span class="level-start"><span class="level-item">五月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/03/"><span class="level-start"><span class="level-item">三月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/AI-Agent/"><span class="tag">AI Agent</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ARM64/"><span class="tag">ARM64</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Agent-Loop/"><span class="tag">Agent Loop</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Claude-Code/"><span class="tag">Claude Code</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HTTP-API/"><span class="tag">HTTP API</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/OpenClaw/"><span class="tag">OpenClaw</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unpigz/"><span class="tag">unpigz</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="tag">文件上传</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E9%BA%92%E9%BA%9F/"><span class="tag">麒麟</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a><p class="is-size-7"><span>&copy; 2026 Solwarda</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2026 Solwarda</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script data-pjax src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script data-pjax src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net" defer></script><script src="https://cdn.jsdelivr.net" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script src="https://cdn.jsdelivr.net"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script data-pjax src="/js/insight.js" defer></script><script data-pjax>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
