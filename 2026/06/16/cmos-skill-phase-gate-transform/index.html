@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>从 445 行到 224 行：CMOS Skill Phase-Gate 架构改造实战 - My Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="My Blog"><meta name="msapplication-TileImage" content="/img/favicon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="My Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="基于旧版 cmos-mall-goods 改造为新版 cmos-biz-flow 的经验总结  一、背景与动机在 CMOS 智能体开发中，我们发现随着业务复杂度增长，Skill 文档会逐渐膨胀为一个”巨无霸”——所有规则、流程、场景、示例全堆在一起，导致：  维护困难：规则重复出现在 3+ 处 执行飘忽：LLM 可能跳过关键步骤 新人劝退：读完整个文件才能动手  旧版 cmos-mall-goo"><meta property="og:type" content="blog"><meta property="og:title" content="从 445 行到 224 行：CMOS Skill Phase-Gate 架构改造实战"><meta property="og:url" content="https://solwarda.github.io/2026/06/16/cmos-skill-phase-gate-transform/"><meta property="og:site_name" content="My Blog"><meta property="og:description" content="基于旧版 cmos-mall-goods 改造为新版 cmos-biz-flow 的经验总结  一、背景与动机在 CMOS 智能体开发中，我们发现随着业务复杂度增长，Skill 文档会逐渐膨胀为一个”巨无霸”——所有规则、流程、场景、示例全堆在一起，导致：  维护困难：规则重复出现在 3+ 处 执行飘忽：LLM 可能跳过关键步骤 新人劝退：读完整个文件才能动手  旧版 cmos-mall-goo"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://solwarda.github.io/img/og_image.png"><meta property="article:published_time" content="2026-06-15T16:00:00.000Z"><meta property="article:modified_time" content="2026-06-16T01:59:38.722Z"><meta property="article:author" content="Solwarda"><meta property="article:tag" content="CMOS"><meta property="article:tag" content="经验总结"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://solwarda.github.io/img/og_image.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://solwarda.github.io/2026/06/16/cmos-skill-phase-gate-transform/"},"headline":"从 445 行到 224 行：CMOS Skill Phase-Gate 架构改造实战","image":["https://solwarda.github.io/img/og_image.png"],"datePublished":"2026-06-15T16:00:00.000Z","dateModified":"2026-06-16T01:59:38.722Z","author":{"@type":"Person","name":"Solwarda"},"publisher":{"@type":"Organization","name":"My Blog","logo":{"@type":"ImageObject","url":"https://solwarda.github.io/img/logo.svg"}},"description":"基于旧版 cmos-mall-goods 改造为新版 cmos-biz-flow 的经验总结  一、背景与动机在 CMOS 智能体开发中，我们发现随着业务复杂度增长，Skill 文档会逐渐膨胀为一个”巨无霸”——所有规则、流程、场景、示例全堆在一起，导致：  维护困难：规则重复出现在 3+ 处 执行飘忽：LLM 可能跳过关键步骤 新人劝退：读完整个文件才能动手  旧版 cmos-mall-goo"}</script><link rel="canonical" href="https://solwarda.github.io/2026/06/16/cmos-skill-phase-gate-transform/"><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0"><link data-pjax rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href=""><link data-pjax rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net"><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">首页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-15T16:00:00.000Z" title="2026/6/16 00:00:00">2026-06-16</time>发表</span><span class="level-item"><time dateTime="2026-06-16T01:59:38.722Z" title="2026/6/16 09:59:38">2026-06-16</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></span><span class="level-item">7 分钟读完 (大约1100个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">从 445 行到 224 行：CMOS Skill Phase-Gate 架构改造实战</h1><div class="content"><blockquote>
+<p>基于旧版 <code>cmos-mall-goods</code> 改造为新版 <code>cmos-biz-flow</code> 的经验总结</p>
+</blockquote>
+<h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><p>在 CMOS 智能体开发中，我们发现随着业务复杂度增长，Skill 文档会逐渐膨胀为一个”巨无霸”——所有规则、流程、场景、示例全堆在一起，导致：</p>
+<ol>
+<li><strong>维护困难</strong>：规则重复出现在 3+ 处</li>
+<li><strong>执行飘忽</strong>：LLM 可能跳过关键步骤</li>
+<li><strong>新人劝退</strong>：读完整个文件才能动手</li>
+</ol>
+<p>旧版 <code>cmos-mall-goods</code> 就是典型代表：<strong>445 行</strong>单体文件，包含提槽规则、价格映射表、模糊意图转换、多品类检测、40+ 分支决策树、场景流程、输出格式、Gotchas 等全部内容。</p>
+<p>我们决定用它来”开刀”，验证 Phase-Gate 架构的可行性。</p>
+<hr>
+<h2 id="二、改造效果"><a href="#二、改造效果" class="headerlink" title="二、改造效果"></a>二、改造效果</h2><table>
+<thead>
+<tr>
+<th>指标</th>
+<th>旧版 cmos-mall-goods</th>
+<th>新版 cmos-biz-flow</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SKILL.md 行数</td>
+<td>445 行</td>
+<td>224 行 (-50%)</td>
+</tr>
+<tr>
+<td>顶层章节数</td>
+<td>14 个</td>
+<td>11 个</td>
+</tr>
+<tr>
+<td>场景枚举</td>
+<td>5 个模糊分类</td>
+<td>12 个精确 scenario 值</td>
+</tr>
+<tr>
+<td>是否有 Gate</td>
+<td>❌ 无</td>
+<td>✅ 4 个 Phase Gate</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、Phase-Gate-执行引擎"><a href="#三、Phase-Gate-执行引擎" class="headerlink" title="三、Phase-Gate 执行引擎"></a>三、Phase-Gate 执行引擎</h2><p>这是本次改造的<strong>核心创新</strong>。把”读完全文再行动”变成”读一段、执行、验证、通过、下一步”：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Phase</span> <span class="hljs-number">1</span>: 场景识别 + 槽位提取  ← Gate <span class="hljs-number">1</span>: scenario 有效，slots 必填字段非空<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">2</span>: 工具路由 + 参数构造  ← Gate <span class="hljs-number">2</span>: tool_selection 匹配 scenario<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">3</span>: 工具调用 + 结果处理  ← Gate <span class="hljs-number">3</span>: 跨场景门控(G1-G6)全部通过<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">4</span>: LLM 精排 + 最终输出  ← Gate <span class="hljs-number">4</span>: 红线未触，输出要素完整<br></code></pre></td></tr></table></figure>
+
+<h3 id="每个-Phase-输出结构化-JSON"><a href="#每个-Phase-输出结构化-JSON" class="headerlink" title="每个 Phase 输出结构化 JSON"></a>每个 Phase 输出结构化 JSON</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;slots&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span>...<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;category_groups&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>...<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;tool_selection&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;商品推荐&quot;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">3</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;tools_called&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>...<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;gate_checks&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span>...<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">4</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;phase4_complete&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>作用</strong>：</p>
+<ul>
+<li>LLM 自我验证（各阶段输出可回溯）</li>
+<li>跨阶段数据传递（Phase 1 的 slots → Phase 2 的 category-groups → Phase 3 的工具调用）</li>
+<li>调试时可定位到具体 Phase 出错</li>
+</ul>
+<hr>
+<h2 id="四、设计模式总结"><a href="#四、设计模式总结" class="headerlink" title="四、设计模式总结"></a>四、设计模式总结</h2><h3 id="模式1：Quick-Reference-速查表"><a href="#模式1：Quick-Reference-速查表" class="headerlink" title="模式1：Quick Reference 速查表"></a>模式1：Quick Reference 速查表</h3><p>文件最前面放一张意图→场景→工具链的映射表（13 行），LLM 可在不读任何执行流程的情况下完成场景路由。</p>
+<h3 id="模式2：单一来源-按需加载"><a href="#模式2：单一来源-按需加载" class="headerlink" title="模式2：单一来源 + 按需加载"></a>模式2：单一来源 + 按需加载</h3><ul>
+<li><strong>SKILL.md</strong> &#x3D; 架构 + 路由表 + 全局约束（~200行）</li>
+<li><strong>references&#x2F;*.md</strong> &#x3D; 完整执行细节 + 各自 Checklist（按需加载）</li>
+</ul>
+<p>规则只在 SKILL.md 中定义一次，reference 文档通过 Gate 编号引用 SKILL.md 的约束。</p>
+<h3 id="模式3：Reference-文档-Checklist"><a href="#模式3：Reference-文档-Checklist" class="headerlink" title="模式3：Reference 文档 Checklist"></a>模式3：Reference 文档 Checklist</h3><p>每个 reference 文档以 Phase-Gate 检查清单结尾（markdown checkbox 格式），LLM 执行完该文档流程后逐项验证。</p>
+<hr>
+<h2 id="五、skill-creator-模式评审"><a href="#五、skill-creator-模式评审" class="headerlink" title="五、skill-creator 模式评审"></a>五、skill-creator 模式评审</h2><p>使用 <code>cmos-skill-creator</code> 的设计模式标准进行评审：</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>评估</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>设计模式</strong></td>
+<td>✅ 符合 Pipeline（流水线）</td>
+</tr>
+<tr>
+<td><strong>核心痛点</strong></td>
+<td>✅ 解决了”复杂任务跳步”问题</td>
+</tr>
+<tr>
+<td><strong>门控机制</strong></td>
+<td>✅ 4 个 Phase + Gate 把关</td>
+</tr>
+</tbody></table>
+<h3 id="潜在改进点"><a href="#潜在改进点" class="headerlink" title="潜在改进点"></a>潜在改进点</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>严重程度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gate 3 描述过于笼统</td>
+<td>中</td>
+<td>“该场景所有适用门控均通过”未列出具体检查项</td>
+</tr>
+<tr>
+<td>无跳步恢复机制</td>
+<td>低</td>
+<td>未说明重试上限</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、适用场景判断"><a href="#六、适用场景判断" class="headerlink" title="六、适用场景判断"></a>六、适用场景判断</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs">是否有多场景路由？<br>├─ 否（单一场景）→ 不需要 Phase-Gate，保持简洁<br>└─ 是<br>   ├─ 场景数 ≤ 3，流程简单 → 可选，收益有限<br>   └─ 场景数 &gt; 3，流程复杂 → 强烈建议改造<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、后续-Skill-状态"><a href="#七、后续-Skill-状态" class="headerlink" title="七、后续 Skill 状态"></a>七、后续 Skill 状态</h2><table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>行数</th>
+<th>是否 Phase-Gate</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>cmos-biz-flow</td>
+<td>224</td>
+<td>✅ 是</td>
+<td>参考标杆</td>
+</tr>
+<tr>
+<td>cmos-plan</td>
+<td>480</td>
+<td>❌ 否</td>
+<td>最大单体，最需要改造</td>
+</tr>
+<tr>
+<td>cmos-data-traffic</td>
+<td>263</td>
+<td>❌ 否</td>
+<td>可能在改造中</td>
+</tr>
+<tr>
+<td>cmos-mall-phone</td>
+<td>较小</td>
+<td>❌ 否</td>
+<td>场景单一，优先级低</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>Phase-Gate 架构的核心价值：</p>
+<ol>
+<li><strong>职责清晰</strong>：每个 Phase 专注一件事</li>
+<li><strong>可观测 DEBUG</strong>：每个 Phase 输出 JSON，出问题能快速定位</li>
+<li><strong>容错回退</strong>：Gate 不通过则重做</li>
+<li><strong>可扩展</strong>：新增场景&#x2F;工具只需修改对应 Phase</li>
+</ol>
+<p>它不是银弹——简单场景（≤3 个场景）反而增加不必要的复杂度。但对于 cmos-biz-flow 这类<strong>场景多、工具多、有依赖链</strong>的复杂业务，效果显著。</p>
+<hr>
+<p><em>本文档基于 cmos-skill-creator 规范评审，相关代码已沉淀到 CMOS Skill 库。</em></p>
+</div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/CMOS/">CMOS</a><a class="link-muted mr-2" rel="tag" href="/tags/%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93/">经验总结</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2026/04/16/tailScale/"><span class="level-item"> </span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="Solwarda"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Solwarda</p><p class="is-size-6 is-block">个人博客</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives/"><p class="title">6</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories/"><p class="title">3</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags/"><p class="title">11</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Solwarda" target="_blank" rel="me noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/"><span class="level-start"><span class="level-item">技术探索</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/"><span class="level-start"><span class="level-item">默认分类</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-15T16:00:00.000Z">2026-06-16</time></p><p class="title"><a href="/2026/06/16/cmos-skill-phase-gate-transform/">从 445 行到 224 行：CMOS Skill Phase-Gate 架构改造实战</a></p><p class="categories"><a href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-04-16T07:06:20.517Z">2026-04-16</time></p><p class="title"><a href="/2026/04/16/tailScale/"> </a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-04-05T00:06:20.066Z">2026-04-05</time></p><p class="title"><a href="/2026/04/05/hello-world/">Hello World</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-12T16:00:00.000Z">2026-03-13</time></p><p class="title"><a href="/2026/03/13/openclaw-http-api-guide/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><p class="categories"><a href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-10T16:00:00.000Z">2026-03-11</time></p><p class="title"><a href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><p class="categories"><a href="/categories/Docker/">Docker</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2026/06/"><span class="level-start"><span class="level-item">六月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/04/"><span class="level-start"><span class="level-item">四月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/03/"><span class="level-start"><span class="level-item">三月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/02/"><span class="level-start"><span class="level-item">二月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/ARM64/"><span class="tag">ARM64</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/CMOS/"><span class="tag">CMOS</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HTTP-API/"><span class="tag">HTTP API</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/OpenClaw/"><span class="tag">OpenClaw</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unpigz/"><span class="tag">unpigz</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%8D%9A%E5%AE%A2/"><span class="tag">博客</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="tag">文件上传</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%AC%A2%E8%BF%8E/"><span class="tag">欢迎</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93/"><span class="tag">经验总结</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E9%BA%92%E9%BA%9F/"><span class="tag">麒麟</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a><p class="is-size-7"><span>&copy; 2026 Solwarda</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2026 Solwarda</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script data-pjax src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script data-pjax src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net" defer></script><script src="https://cdn.jsdelivr.net" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script src="https://cdn.jsdelivr.net"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
