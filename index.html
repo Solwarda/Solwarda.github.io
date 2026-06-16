@@ -29,659 +29,119 @@
       switchTab();
       window.addEventListener('hashchange', switchTab, false);
   })();
-  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 8.1.2"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item is-active" href="/">首页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><a class="image is-7by3" href="/2026/06/02/blog-s05-todo-write/"><img class="fill" src="/img/todo-cover.png" alt="不给 Agent 加能力，只加结构 — s05 TodoWrite 学习笔记"></a></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-02T06:00:00.000Z" title="2026/6/2 14:00:00">2026-06-02</time>发表</span><span class="level-item"><time dateTime="2026-06-02T06:00:00.000Z" title="2026/6/2 14:00:00">2026-06-02</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">9 分钟读完 (大约1334个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/06/02/blog-s05-todo-write/">不给 Agent 加能力，只加结构 — s05 TodoWrite 学习笔记</a></p><div class="content"><h2 id="一句话核心"><a href="#一句话核心" class="headerlink" title="一句话核心"></a>一句话核心</h2><blockquote>
-<p><strong>“没有计划的 agent 走哪算哪”</strong></p>
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.3.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item is-active" href="/">首页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-15T16:00:00.000Z" title="2026/6/16 00:00:00">2026-06-16</time>发表</span><span class="level-item"><time dateTime="2026-06-16T02:27:04.593Z" title="2026/6/16 10:27:04">2026-06-16</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></span><span class="level-item">6 分钟读完 (大约921个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/06/16/cmos-skill-phase-gate-transform/">从 445 行到 224 行：Skill Phase-Gate 架构改造经验</a></p><div class="content"><blockquote>
+<p>基于真实业务场景 Skill 改造的经验总结</p>
 </blockquote>
-<p>s05 通过一个<strong>零执行能力、只有规划能力</strong>的 <code>todo_write</code> 工具，让 Agent 在动手之前先列步骤。它不读文件、不写文件、不跑命令——它唯一的作用是让 Agent 把自己的思路结构化地记下来。</p>
-<p>这个设计思想贯穿了整个 Claude Code 的任务系统演进。</p>
-<hr>
-<h2 id="为什么需要这个"><a href="#为什么需要这个" class="headerlink" title="为什么需要这个"></a>为什么需要这个</h2><h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>给 Agent 一个多步骤任务：</p>
-<blockquote>
-<p>“把所有 Python 文件改成 snake_case 命名，然后跑测试，修好失败。”</p>
-</blockquote>
-<p>Agent 开始干活，改了 3 个文件，跑了个测试，发现 2 个失败，开始修。修着修着，它忘了最初是”改成 snake_case”——测试失败把注意力全吸走了。对话越长越严重，系统提示的影响力被稀释。一个 10 步重构，做完 1-3 步就开始即兴发挥，因为 4-10 步已经被挤出注意力了。</p>
-<h3 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h3><p>在已有工具集（bash、read_file、write_file、edit_file、glob）的基础上，不改变任何现有逻辑，只新增一个工具：<code>todo_write</code>。</p>
-<p>保留 s04 的 hook 系统不变，只增加三样东西：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 1. 一个全局内存列表</span><br>CURRENT_TODOS: <span class="hljs-built_in">list</span>[<span class="hljs-built_in">dict</span>] = []<br><br><span class="hljs-comment"># 2. 一个计数器</span><br>rounds_since_todo = <span class="hljs-number">0</span><br><br><span class="hljs-comment"># 3. 一个提醒注入机制</span><br><span class="hljs-keyword">if</span> rounds_since_todo &gt;= <span class="hljs-number">2</span>:<br>    messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>,<br>                     <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;&lt;reminder&gt;Update your todos.&lt;/reminder&gt;&quot;</span>&#125;)<br></code></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="架构速览"><a href="#架构速览" class="headerlink" title="架构速览"></a>架构速览</h2><h3 id="循环流程"><a href="#循环流程" class="headerlink" title="循环流程"></a>循环流程</h3><figure class="highlight erlang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs erlang"><span class="hljs-function"><span class="hljs-title">agent_loop</span><span class="hljs-params">()</span> 每轮迭代</span><br><span class="hljs-function">├── ① <span class="hljs-title">nag</span> 检查          <span class="hljs-params">(rounds_since_todo &gt;= <span class="hljs-number">2</span>?)</span></span><br><span class="hljs-function">│     └── 触发 → 注入 &lt;<span class="hljs-title">reminder</span>&gt;</span><br><span class="hljs-function">├── ② 发送给 LLM         <span class="hljs-params">(system + messages + tools)</span></span><br><span class="hljs-function">├── ③ LLM 返回           <span class="hljs-params">(text / thinking / tool_use)</span></span><br><span class="hljs-function">├── ④ 判断是否继续       <span class="hljs-params">(stop_reason == tool_use?)</span></span><br><span class="hljs-function">├── ⑤ <span class="hljs-title">rounds_since_todo</span> +1</span><br><span class="hljs-function">└── ⑥ 执行工具           <span class="hljs-params">(通过 TOOL_HANDLERS 分发)</span></span><br><span class="hljs-function">      └── <span class="hljs-title">todo_write</span>? → <span class="hljs-title">rounds_since_todo</span> = 0</span><br></code></pre></td></tr></table></figure>
-
-<h3 id="todo-write-工具定义"><a href="#todo-write-工具定义" class="headerlink" title="todo_write 工具定义"></a>todo_write 工具定义</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs python">TOOLS = [<br>    <span class="hljs-comment"># ... 5 个现有工具 ...</span><br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;todo_write&quot;</span>, <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;创建和管理任务列表&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<br>         <span class="hljs-string">&quot;properties&quot;</span>: &#123;<br>             <span class="hljs-string">&quot;todos&quot;</span>: &#123;<br>                 <span class="hljs-string">&quot;items&quot;</span>: &#123;<br>                     <span class="hljs-string">&quot;properties&quot;</span>: &#123;<br>                         <span class="hljs-string">&quot;content&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;,<br>                         <span class="hljs-string">&quot;status&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>, <span class="hljs-string">&quot;enum&quot;</span>: [<br>                             <span class="hljs-string">&quot;pending&quot;</span>, <span class="hljs-string">&quot;in_progress&quot;</span>, <span class="hljs-string">&quot;completed&quot;</span><br>                         ]&#125;,<br>                     &#125;,<br>                 &#125;,<br>             &#125;,<br>         &#125;,<br>     &#125;,<br>    &#125;,<br>]<br></code></pre></td></tr></table></figure>
-
-<h3 id="三层结构"><a href="#三层结构" class="headerlink" title="三层结构"></a>三层结构</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs stylus">开发者定义 schema（格式框）    → input_schema 中规定 <span class="hljs-attribute">content</span> + status 枚举<br>         ↓<br>LLM 填充具体内容              → 列什么任务、标什么状态<br>         ↓<br><span class="hljs-function"><span class="hljs-title">run_todo_write</span><span class="hljs-params">()</span></span> 校验合法性   → 字段存在？状态值合法？写入内存<br></code></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="亲手测试：完整运行记录"><a href="#亲手测试：完整运行记录" class="headerlink" title="亲手测试：完整运行记录"></a>亲手测试：完整运行记录</h2><h3 id="测试-Prompt"><a href="#测试-Prompt" class="headerlink" title="测试 Prompt"></a>测试 Prompt</h3><figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs pgsql"><span class="hljs-keyword">Check</span> s05_todo_write/example/, <span class="hljs-keyword">then</span> <span class="hljs-keyword">create</span> utils.py there <span class="hljs-keyword">and</span><br><span class="hljs-keyword">move</span> hello.py <span class="hljs-keyword">into</span> an <span class="hljs-built_in">old</span>/ subfolder<br></code></pre></td></tr></table></figure>
-
-<p>3 个子任务合成一句话，看 Agent 是否会主动规划。</p>
-<h3 id="完整-7-轮运行"><a href="#完整-7-轮运行" class="headerlink" title="完整 7 轮运行"></a>完整 7 轮运行</h3><figure class="highlight tap"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs tap">第<span class="hljs-number"> 1 </span>轮:  bash (ls 查看目录)        → 距上次规划=1<br>第<span class="hljs-number"> 2 </span>轮:  read_file (读 hello.py)   → 距上次规划=2<br>                                      ⚠ NAG 触发！<br>第<span class="hljs-number"> 3 </span>轮:  todo_write (列<span class="hljs-number"> 2 </span>步计划)   → 计数器归零<br>          + write_file (创建 utils.py)<br>第<span class="hljs-number"> 4 </span>轮:  bash (mkdir + mv)         → 距上次规划=1<br>第<span class="hljs-number"> 5 </span>轮:  bash (ls 验证)            → 距上次规划=2<br>                                      ⚠ NAG 再次触发！<br>第<span class="hljs-number"> 6 </span>轮:  todo_write (更新 ✓ ✓)    → 计数器归零<br>第<span class="hljs-number"> 7 </span>轮:  end_turn → 完成<br></code></pre></td></tr></table></figure>
-
-<h3 id="TODO-状态变化"><a href="#TODO-状态变化" class="headerlink" title="TODO 状态变化"></a>TODO 状态变化</h3><table>
-<thead>
-<tr>
-<th>轮次</th>
-<th>TODO 状态</th>
-<th>距上次规划</th>
-<th>事件</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>3</td>
-<td><code>▶ ◻</code> (0&#x2F;2)</td>
-<td>0</td>
-<td>创建计划 + 写 utils.py</td>
-</tr>
-<tr>
-<td>4</td>
-<td><code>▶ ◻</code> (0&#x2F;2)</td>
-<td>1</td>
-<td>移动文件，但忘了更新</td>
-</tr>
-<tr>
-<td>5</td>
-<td><code>▶ ◻</code> (0&#x2F;2)</td>
-<td>2</td>
-<td>验证完成，仍没更新</td>
-</tr>
-<tr>
-<td>6</td>
-<td><code>✓ ✓</code> (2&#x2F;2)</td>
-<td>← nag 后才更新</td>
-<td></td>
-</tr>
-</tbody></table>
-<h3 id="关键观察"><a href="#关键观察" class="headerlink" title="关键观察"></a>关键观察</h3><ol>
-<li><strong>Nag 确实起作用了</strong>：两次 nag 都让 Agent 调了 <code>todo_write</code>，第一次列计划，第二次更新状态</li>
-<li><strong>但 Agent 仍然忘了更新状态</strong>：两步实际都完成了，但 TODO 状态一直显示 <code>▶ ◻</code>，直到第二次 nag 才反应过来</li>
-<li><strong>Agent 没有在第 1 轮就规划</strong>：即使 SYSTEM 提示写了”先规划再执行”，Agent 还是先读了文件再说</li>
+<h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><p>在 CMOS 智能体开发中，我们发现随着业务复杂度增长，Skill 文档会逐渐膨胀为一个”巨无霸”——所有规则、流程、场景、示例全堆在一起，导致：</p>
+<ol>
+<li><strong>维护困难</strong>：规则重复出现在 3+ 处</li>
+<li><strong>执行飘忽</strong>：LLM 可能跳过关键步骤</li>
+<li><strong>新人劝退</strong>：读完整个文件才能动手</li>
 </ol>
+<p>我们选取了一个 <strong>445 行</strong>的复杂单体 Skill 作为改造对象，验证 Phase-Gate 架构的可行性。</p>
 <hr>
-<h2 id="深入讨论：这个机制真的有用吗？"><a href="#深入讨论：这个机制真的有用吗？" class="headerlink" title="深入讨论：这个机制真的有用吗？"></a>深入讨论：这个机制真的有用吗？</h2><h3 id="我在学习中的质疑"><a href="#我在学习中的质疑" class="headerlink" title="我在学习中的质疑"></a>我在学习中的质疑</h3><blockquote>
-<p>“提醒就是往对话里塞一条消息。如果上下文已经太长了，这条消息不也会被稀释吗？”</p>
-</blockquote>
-<h3 id="教学版-vs-真实-Claude-Code"><a href="#教学版-vs-真实-Claude-Code" class="headerlink" title="教学版 vs 真实 Claude Code"></a>教学版 vs 真实 Claude Code</h3><table>
+<h2 id="二、改造效果"><a href="#二、改造效果" class="headerlink" title="二、改造效果"></a>二、改造效果</h2><table>
 <thead>
 <tr>
-<th></th>
-<th>教学版 s05</th>
-<th>真实 Claude Code</th>
+<th>指标</th>
+<th>改造前</th>
+<th>改造后</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>任务存放位置</td>
-<td>对话历史的 messages 里</td>
-<td><strong>system prompt 顶部，每轮重新注入</strong></td>
+<td>SKILL.md 行数</td>
+<td>445 行</td>
+<td>224 行 (-50%)</td>
 </tr>
 <tr>
-<td>Nag 方式</td>
-<td>写死的 <code>&lt;reminder&gt;</code> 字符串</td>
-<td>模型根据上下文动态生成提醒</td>
+<td>顶层章节数</td>
+<td>14 个</td>
+<td>11 个</td>
 </tr>
 <tr>
-<td>上下文稀释</td>
-<td>会，todo 被埋没在历史中</td>
-<td>不太会，system 始终是最新的</td>
+<td>场景枚举</td>
+<td>5 个模糊分类</td>
+<td>12 个精确 scenario 值</td>
 </tr>
 <tr>
-<td>对话太长</td>
-<td>无处理</td>
-<td>→ Subagent 拆到独立对话</td>
-</tr>
-<tr>
-<td>任务依赖</td>
-<td>平铺列表</td>
-<td>→ Task System V2: blockedBy 依赖图</td>
+<td>是否有 Gate</td>
+<td>❌ 无</td>
+<td>✅ 4 个 Phase Gate</td>
 </tr>
 </tbody></table>
-<h3 id="核心结论"><a href="#核心结论" class="headerlink" title="核心结论"></a>核心结论</h3><p><code>todo_write</code> 的真正价值不是”这个机制能完美解决问题”，而是展示一个设计思路：</p>
-<blockquote>
-<p><strong>不给 Agent 增加执行能力，只增加规划能力</strong></p>
-</blockquote>
-<p>一个不读文件、不写文件、不跑命令的工具，单纯通过”让 Agent 把自己的思路结构化地记下来”，就能显著改善多步骤任务的执行质量。</p>
-<p>但正如测试结果所示——<strong>光靠 reminder 确实不够</strong>。它只是整个演进链路的第一环：</p>
+<hr>
+<h2 id="三、Phase-Gate-执行引擎"><a href="#三、Phase-Gate-执行引擎" class="headerlink" title="三、Phase-Gate 执行引擎"></a>三、Phase-Gate 执行引擎</h2><p>这是本次改造的<strong>核心创新</strong>。把”读完全文再行动”变成”读一段、执行、验证、通过、下一步”：</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Phase</span> <span class="hljs-number">1</span>: 场景识别 + 槽位提取  ← Gate <span class="hljs-number">1</span>: scenario 有效，slots 必填字段非空<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">2</span>: 工具路由 + 参数构造  ← Gate <span class="hljs-number">2</span>: tool_selection 匹配 scenario<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">3</span>: 工具调用 + 结果处理  ← Gate <span class="hljs-number">3</span>: 跨场景门控(G1-G6)全部通过<br><span class="hljs-attribute">Phase</span> <span class="hljs-number">4</span>: LLM 精排 + 最终输出  ← Gate <span class="hljs-number">4</span>: 红线未触，输出要素完整<br></code></pre></td></tr></table></figure>
+
+<h3 id="每个-Phase-输出结构化-JSON"><a href="#每个-Phase-输出结构化-JSON" class="headerlink" title="每个 Phase 输出结构化 JSON"></a>每个 Phase 输出结构化 JSON</h3><figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;slots&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span>...<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">2</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;category_groups&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>...<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;tool_selection&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;商品推荐&quot;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">3</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;tools_called&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>...<span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;gate_checks&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">&#123;</span>...<span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#123;</span><span class="hljs-attr">&quot;phase&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">4</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;scenario&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;rec_explicit&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-attr">&quot;phase4_complete&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-literal"><span class="hljs-keyword">true</span></span><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
+
+<p><strong>作用</strong>：</p>
 <ul>
-<li><strong>s05</strong>：内存列表 + nag reminder → 先学会列计划</li>
-<li><strong>s06 Subagent</strong>：把大任务拆成独立子任务，每个有干净上下文</li>
-<li><strong>s12 Task System V2</strong>：文件持久化 + <code>blockedBy</code> 依赖图 + 并发锁 + ownership</li>
+<li>LLM 自我验证（各阶段输出可回溯）</li>
+<li>跨阶段数据传递（Phase 1 的 slots → Phase 2 的 category-groups → Phase 3 的工具调用）</li>
+<li>调试时可定位到具体 Phase 出错</li>
 </ul>
 <hr>
-<h2 id="延伸阅读"><a href="#延伸阅读" class="headerlink" title="延伸阅读"></a>延伸阅读</h2><ul>
-<li><a href="./blog-s01-agent-loop.html">s01 Agent Loop 笔记</a></li>
-<li><a href="./blog-s02-tool-use.html">s02 Tool Use 笔记</a></li>
-<li><a href="./blog-s04-hooks.html">s04 Hooks 笔记</a></li>
-<li>真实 CC 源码：<code>TodoWriteTool.ts</code>、<code>tasks.ts</code></li>
+<h2 id="四、设计模式总结"><a href="#四、设计模式总结" class="headerlink" title="四、设计模式总结"></a>四、设计模式总结</h2><h3 id="模式1：Quick-Reference-速查表"><a href="#模式1：Quick-Reference-速查表" class="headerlink" title="模式1：Quick Reference 速查表"></a>模式1：Quick Reference 速查表</h3><p>文件最前面放一张意图→场景→工具链的映射表（13 行），LLM 可在不读任何执行流程的情况下完成场景路由。</p>
+<h3 id="模式2：单一来源-按需加载"><a href="#模式2：单一来源-按需加载" class="headerlink" title="模式2：单一来源 + 按需加载"></a>模式2：单一来源 + 按需加载</h3><ul>
+<li><strong>SKILL.md</strong> &#x3D; 架构 + 路由表 + 全局约束（~200行）</li>
+<li><strong>references&#x2F;*.md</strong> &#x3D; 完整执行细节 + 各自 Checklist（按需加载）</li>
 </ul>
-</div></article></div><div class="card"><div class="card-image"><a class="image is-7by3" href="/2026/06/01/blog-s04-hooks/"><img class="fill" src="/img/hooks-cover.png" alt="Hooks 机制：把扩展挂在循环外，而不是塞进循环里"></a></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-01T08:00:00.000Z" title="2026/6/1 16:00:00">2026-06-01</time>发表</span><span class="level-item"><time dateTime="2026-06-01T08:00:00.000Z" title="2026/6/1 16:00:00">2026-06-01</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">16 分钟读完 (大约2465个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/06/01/blog-s04-hooks/">Hooks 机制：把扩展挂在循环外，而不是塞进循环里</a></p><div class="content"><blockquote>
-<p>本文是 <code>learn-claude-code</code> 系列的第三篇。s03 把权限检查放进了循环里，s04 要解决的是——<strong>加的功能越来越多，循环越来越乱怎么办？</strong></p>
-</blockquote>
+<p>规则只在 SKILL.md 中定义一次，reference 文档通过 Gate 编号引用 SKILL.md 的约束。</p>
+<h3 id="模式3：Reference-文档-Checklist"><a href="#模式3：Reference-文档-Checklist" class="headerlink" title="模式3：Reference 文档 Checklist"></a>模式3：Reference 文档 Checklist</h3><p>每个 reference 文档以 Phase-Gate 检查清单结尾（markdown checkbox 格式），LLM 执行完该文档流程后逐项验证。</p>
 <hr>
-<h2 id="一、从一个痛点开始"><a href="#一、从一个痛点开始" class="headerlink" title="一、从一个痛点开始"></a>一、从一个痛点开始</h2><p>s03 的循环长这样：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages</span>):<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        response = client.messages.create(...)<br>        messages.append(response.content)<br><br>        <span class="hljs-keyword">if</span> response.stop_reason != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>            <span class="hljs-keyword">return</span><br><br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                <span class="hljs-keyword">continue</span><br><br>            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_permission(block):  <span class="hljs-comment"># ← 权限检查</span><br>                <span class="hljs-keyword">continue</span><br><br>            handler = TOOL_HANDLERS.get(block.name)<br>            output = handler(**block.<span class="hljs-built_in">input</span>)<br>            results.append(...)<br></code></pre></td></tr></table></figure>
-
-<p>看起来还行。但你继续加功能呢？</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages</span>):<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        <span class="hljs-comment"># ... LLM call ...</span><br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                <span class="hljs-keyword">continue</span><br><br>            <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_permission(block):   <span class="hljs-comment"># 权限</span><br>                <span class="hljs-keyword">continue</span><br>            log_to_file(block)                <span class="hljs-comment"># 日志</span><br>            notify_slack(block)               <span class="hljs-comment"># Slack 通知</span><br>            inject_context(block)             <span class="hljs-comment"># 注入上下文</span><br>            <span class="hljs-comment"># ... 很快循环就认不出来了 ...</span><br><br>            output = execute(block)<br>            auto_git_add(block)               <span class="hljs-comment"># 自动 git add</span><br>            check_output(block)               <span class="hljs-comment"># 检查输出</span><br></code></pre></td></tr></table></figure>
-
-<p><strong>问题：</strong> 每次加一个新功能，都要进循环里加一行。循环变成了一个大杂烩。</p>
-<blockquote>
-<p>你想扩展的是 Agent 的行为，但你改的却是循环本身。循环应该是一个稳定的核心，扩展应该挂在外面。</p>
-</blockquote>
-<hr>
-<h2 id="二、直接写函数不行吗？"><a href="#二、直接写函数不行吗？" class="headerlink" title="二、直接写函数不行吗？"></a>二、直接写函数不行吗？</h2><p>你说：我写几个普通函数，在循环里调不就行了？为什么要学什么”事件-回调”、”钩子”这种花里胡哨的东西？</p>
-<p>好问题。3 个功能时确实没区别，我们来对比一下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># ── 直接写函数（3 个功能）── 挺好</span><br><span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_permission(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> log_to_file(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> notify_slack(block): <span class="hljs-keyword">continue</span><br>    output = execute(block)<br></code></pre></td></tr></table></figure>
-
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># ── 直接写函数（30 个功能）── 循环爆炸</span><br><span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_deny_list(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_destructive(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_workspace(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_env_file(block): <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> ask_user_if_needed(block): <span class="hljs-keyword">continue</span><br>    log_to_file(block)<br>    log_to_slack(block)<br>    log_to_datadog(block)<br>    inject_git_branch(block)<br>    inject_claude_md(block)<br>    inject_recent_files(block)<br>    <span class="hljs-comment"># ... 越来越长 ...</span><br>    output = execute(block)<br>    auto_git_add(block)<br>    notify_webhook(block)<br>    check_output_size(block)<br>    <span class="hljs-comment"># ...</span><br></code></pre></td></tr></table></figure>
-
-<p><strong>当功能少的时候，直接写函数完全没问题。当功能多了以后，两个痛点浮现：</strong></p>
-<table>
-<thead>
-<tr>
-<th>痛点</th>
-<th>直接写函数</th>
-<th>用钩子</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>核心循环变脏</td>
-<td>30 行功能混在 5 行循环里</td>
-<td>循环永远 3 行，功能在外面</td>
-</tr>
-<tr>
-<td>按需加载</td>
-<td>要么全部执行，要么手动 if&#x2F;else</td>
-<td>按环境注册不同的钩子</td>
-</tr>
-<tr>
-<td>第三方扩展</td>
-<td>别人必须改你的循环</td>
-<td>别人调用 register_hook 就行</td>
-</tr>
-</tbody></table>
-<p><strong>但更重要的是——你不需要在 3 个功能时就用钩子。</strong> 这个模式在功能膨胀到一定程度时才自然需要。s04 的教学目的是提前让你看到这个模式，而不是让你在写 3 个功能时就过度设计。</p>
-<hr>
-<h2 id="三、解决方案：Hook-系统"><a href="#三、解决方案：Hook-系统" class="headerlink" title="三、解决方案：Hook 系统"></a>三、解决方案：Hook 系统</h2><p>核心思路就四个字：<strong>先登记，到时候喊你。</strong></p>
-<p>拆成两个动作：</p>
-<h3 id="3-1-登记（注册）"><a href="#3-1-登记（注册）" class="headerlink" title="3.1 登记（注册）"></a>3.1 登记（注册）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># s04/code.py 文件加载时执行</span><br>register_hook(<span class="hljs-string">&quot;PreToolUse&quot;</span>, permission_hook)   <span class="hljs-comment"># &quot;执行工具前，帮我检查权限&quot;</span><br>register_hook(<span class="hljs-string">&quot;PreToolUse&quot;</span>, log_hook)          <span class="hljs-comment"># &quot;执行工具前，帮我记个日志&quot;</span><br>register_hook(<span class="hljs-string">&quot;PostToolUse&quot;</span>, large_output_hook) <span class="hljs-comment"># &quot;执行工具后，看看输出大不大&quot;</span><br>register_hook(<span class="hljs-string">&quot;Stop&quot;</span>, summary_hook)            <span class="hljs-comment"># &quot;循环要结束时，打个总结&quot;</span><br>register_hook(<span class="hljs-string">&quot;UserPromptSubmit&quot;</span>, context_inject_hook) <span class="hljs-comment"># &quot;用户提交输入时，注个工作目录&quot;</span><br></code></pre></td></tr></table></figure>
-
-<h3 id="3-2-到点执行（触发）"><a href="#3-2-到点执行（触发）" class="headerlink" title="3.2 到点执行（触发）"></a>3.2 到点执行（触发）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># agent_loop 里，在需要的时间点调用 trigger_hooks</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages</span>):<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        response = client.messages.create(...)<br>        messages.append(response.content)<br><br>        <span class="hljs-keyword">if</span> response.stop_reason != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>            trigger_hooks(<span class="hljs-string">&quot;Stop&quot;</span>, messages)     <span class="hljs-comment"># ← 退出前</span><br>            <span class="hljs-keyword">return</span><br><br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                <span class="hljs-keyword">continue</span><br><br>            blocked = trigger_hooks(<span class="hljs-string">&quot;PreToolUse&quot;</span>, block)  <span class="hljs-comment"># ← 执行前</span><br>            <span class="hljs-keyword">if</span> blocked:<br>                <span class="hljs-keyword">continue</span><br><br>            output = execute(block)<br>            trigger_hooks(<span class="hljs-string">&quot;PostToolUse&quot;</span>, block, output)    <span class="hljs-comment"># ← 执行后</span><br></code></pre></td></tr></table></figure>
-
-<p><strong>循环只做三件事：调模型、触发钩子、执行工具。具体逻辑全在钩子里。</strong></p>
-<hr>
-<h2 id="四、四个钩子事件"><a href="#四、四个钩子事件" class="headerlink" title="四、四个钩子事件"></a>四、四个钩子事件</h2><p>s04 定义了 4 个事件，覆盖 Agent 一次完整生命周期的关键节点：</p>
-<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">用户输入 <span class="hljs-string">&quot;读 README.md&quot;</span><br>    │<br>    ▼<br>┌──────────────────────┐<br>│ UserPromptSubmit     │ ← 用户输入后、进 <span class="hljs-keyword">LLM </span>前<br>│   context_inject_hook│   注入工作目录信息<br>└──────────────────────┘<br>    │<br>    ▼<br>┌──────────────────────┐<br>│   <span class="hljs-keyword">LLM </span>调用            │<br>└──────────────────────┘<br>    │<br>    ▼ 模型返回了 tool_use<br>┌──────────────────────┐<br>│ PreToolUse           │ ← 工具执行前<br>│   permission_hook    │   检查权限<br>│   log_hook           │   记录日志<br>└──────────────────────┘<br>    │<br>    ▼ (权限通过)<br>┌──────────────────────┐<br>│ 执行工具              │<br>└──────────────────────┘<br>    │<br>    ▼<br>┌──────────────────────┐<br>│ PostToolUse          │ ← 工具执行后<br>│   large_output_hook  │   检查输出大小<br>└──────────────────────┘<br>    │<br>    ▼<br>┌──────────────────────┐<br>│ Stop                 │ ← 循环退出前<br>│   summary_hook       │   打印本次会话统计<br>└──────────────────────┘<br>    │<br>    ▼<br>  结束<br></code></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="五、代码实现：就-4-行核心"><a href="#五、代码实现：就-4-行核心" class="headerlink" title="五、代码实现：就 4 行核心"></a>五、代码实现：就 4 行核心</h2><p>整个 hooks 系统的核心逻辑，去掉封装后不到 10 行：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 1. 注册表：一个字典，事件名 → 函数列表</span><br>HOOKS = &#123;<br>    <span class="hljs-string">&quot;UserPromptSubmit&quot;</span>: [],<br>    <span class="hljs-string">&quot;PreToolUse&quot;</span>: [],<br>    <span class="hljs-string">&quot;PostToolUse&quot;</span>: [],<br>    <span class="hljs-string">&quot;Stop&quot;</span>: [],<br>&#125;<br><br><span class="hljs-comment"># 2. 注册函数：往列表里加函数</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">register_hook</span>(<span class="hljs-params">event, callback</span>):<br>    HOOKS[event].append(callback)<br><br><span class="hljs-comment"># 3. 触发函数：遍历列表调所有函数</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">trigger_hooks</span>(<span class="hljs-params">event, *args</span>):<br>    <span class="hljs-keyword">for</span> callback <span class="hljs-keyword">in</span> HOOKS[event]:<br>        result = callback(*args)<br>        <span class="hljs-keyword">if</span> result <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:  <span class="hljs-comment"># 返回值 ≠ None → 拦截</span><br>            <span class="hljs-keyword">return</span> result<br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">None</span><br></code></pre></td></tr></table></figure>
-
-<p><strong>就是这么简单。</strong> 一个字典 + 两个函数，就是整个”事件-回调”系统的全部。</p>
-<hr>
-<h2 id="六、深入理解事件和回调"><a href="#六、深入理解事件和回调" class="headerlink" title="六、深入理解事件和回调"></a>六、深入理解事件和回调</h2><p>这两个名字让很多人困惑，拆开其实很简单：</p>
-<h3 id="事件（Event）-时间点"><a href="#事件（Event）-时间点" class="headerlink" title="事件（Event）&#x3D; 时间点"></a>事件（Event）&#x3D; 时间点</h3><p>程序运行中的<strong>某个时刻</strong>。在 s04 里，事件就是 4 个时刻：</p>
-<figure class="highlight basic"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs basic"><span class="hljs-string">&quot;用户提交了输入&quot;</span>  → UserPromptSubmit<br><span class="hljs-string">&quot;工具要执行了&quot;</span>    → PreToolUse<br><span class="hljs-string">&quot;工具执行完了&quot;</span>    → PostToolUse<br><span class="hljs-string">&quot;循环要退出了&quot;</span>    → <span class="hljs-keyword">Stop</span><br></code></pre></td></tr></table></figure>
-
-<h3 id="回调（Callback）-回头调用"><a href="#回调（Callback）-回头调用" class="headerlink" title="回调（Callback）&#x3D; 回头调用"></a>回调（Callback）&#x3D; 回头调用</h3><p>你把一个函数<strong>留给</strong>系统，系统到点<strong>回头调</strong>它。</p>
-<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs scss">普通调用：<br>  你写 <span class="hljs-built_in">permission_hook</span>(block) → 你自己调它<br><br>回调：<br>  <span class="hljs-built_in">register_hook</span>(&quot;PreToolUse&quot;, permission_hook)<br>  # 你把 permission_hook 留给系统<br>  # 系统到 PreToolUse 时，回头调 <span class="hljs-built_in">permission_hook</span>(block)<br></code></pre></td></tr></table></figure>
-
-<h3 id="为什么叫”钩子”（Hook）"><a href="#为什么叫”钩子”（Hook）" class="headerlink" title="为什么叫”钩子”（Hook）"></a>为什么叫”钩子”（Hook）</h3><p>想象你有一个钩子挂在墙上：</p>
-<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc">墙上有一个钩子（PreToolUse 事件点）<br><span class="hljs-code">    ↓</span><br>你往上挂一件衣服（permission<span class="hljs-emphasis">_hook 函数）</span><br><span class="hljs-emphasis">    ↓</span><br><span class="hljs-emphasis">到时间了，钩子上的衣服自动被穿上（调用 permission_</span>hook）<br></code></pre></td></tr></table></figure>
-
-<p>钩子本身就是一个固定位置（事件点），你决定往上挂什么（回调函数）。</p>
-<h3 id="大白话版本"><a href="#大白话版本" class="headerlink" title="大白话版本"></a>大白话版本</h3><table>
-<thead>
-<tr>
-<th>术语</th>
-<th>说人话</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>注册 <code>register_hook</code></td>
-<td>“先告诉系统一声”</td>
-</tr>
-<tr>
-<td>触发 <code>trigger_hooks</code></td>
-<td>“到点了，干吧”</td>
-</tr>
-<tr>
-<td>事件 <code>event</code></td>
-<td>“什么时候”</td>
-</tr>
-<tr>
-<td>回调 <code>callback</code></td>
-<td>“干什么”</td>
-</tr>
-<tr>
-<td>钩子 <code>hook</code></td>
-<td>系统留的一个”插口”</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="七、对比：s03-vs-s04"><a href="#七、对比：s03-vs-s04" class="headerlink" title="七、对比：s03 vs s04"></a>七、对比：s03 vs s04</h2><table>
+<h2 id="五、模式评审"><a href="#五、模式评审" class="headerlink" title="五、模式评审"></a>五、模式评审</h2><table>
 <thead>
 <tr>
 <th>维度</th>
-<th>s03（直接调函数）</th>
-<th>s04（钩子系统）</th>
+<th>评估</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>权限逻辑在哪</td>
-<td>循环里的 <code>check_permission()</code></td>
-<td>PreToolUse 钩子的 <code>permission_hook</code></td>
+<td><strong>设计模式</strong></td>
+<td>✅ 符合 Pipeline（流水线）</td>
 </tr>
 <tr>
-<td>加新功能</td>
-<td>改循环，加一行函数调用</td>
-<td><code>register_hook(&quot;PreToolUse&quot;, 新函数)</code></td>
+<td><strong>核心痛点</strong></td>
+<td>✅ 解决了”复杂任务跳步”问题</td>
 </tr>
 <tr>
-<td>动态开关</td>
-<td>手动 if&#x2F;else 控制</td>
-<td>按条件注册不同的钩子</td>
-</tr>
-<tr>
-<td>循环的职责</td>
-<td>调模型 + 调工具 + 权限 + 日志 + …</td>
-<td>调模型 + 触发钩子 + 调工具</td>
-</tr>
-<tr>
-<td>扩展性</td>
-<td>循环随功能膨胀</td>
-<td>循环固定，功能插拔</td>
+<td><strong>门控机制</strong></td>
+<td>✅ 4 个 Phase + Gate 把关</td>
 </tr>
 </tbody></table>
-<h3 id="s03-的循环（加了-3-个功能后）"><a href="#s03-的循环（加了-3-个功能后）" class="headerlink" title="s03 的循环（加了 3 个功能后）"></a>s03 的循环（加了 3 个功能后）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>    <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> check_permission(block):<br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> log_to_file(block):<br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> notify_slack(block):<br>        <span class="hljs-keyword">continue</span><br>    output = execute(block)<br></code></pre></td></tr></table></figure>
-
-<h3 id="s04-的循环（加了-30-个功能后）"><a href="#s04-的循环（加了-30-个功能后）" class="headerlink" title="s04 的循环（加了 30 个功能后）"></a>s04 的循环（加了 30 个功能后）</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>    <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">if</span> trigger_hooks(<span class="hljs-string">&quot;PreToolUse&quot;</span>, block):<br>        <span class="hljs-keyword">continue</span><br>    output = execute(block)<br>    trigger_hooks(<span class="hljs-string">&quot;PostToolUse&quot;</span>, block, output)<br></code></pre></td></tr></table></figure>
-
-<p><strong>循环永远只有这 3 行。多加 100 个功能，循环也不变。</strong></p>
+<h3 id="潜在改进点"><a href="#潜在改进点" class="headerlink" title="潜在改进点"></a>潜在改进点</h3><table>
+<thead>
+<tr>
+<th>问题</th>
+<th>严重程度</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Gate 3 描述过于笼统</td>
+<td>中</td>
+<td>“该场景所有适用门控均通过”未列出具体检查项</td>
+</tr>
+<tr>
+<td>无跳步恢复机制</td>
+<td>低</td>
+<td>未说明重试上限</td>
+</tr>
+</tbody></table>
 <hr>
-<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><h3 id="我学到了什么"><a href="#我学到了什么" class="headerlink" title="我学到了什么"></a>我学到了什么</h3><ol>
-<li><strong>问题</strong>：功能一多，循环就变成了大杂烩</li>
-<li><strong>原因</strong>：每次加功能都要改循环本身</li>
-<li><strong>方案</strong>：把功能”挂”在钩子上，不写进循环里</li>
-<li><strong>核心代码</strong>：一个字典 + 两个函数（register + trigger）</li>
-<li><strong>设计优势</strong>：核心稳定，扩展可插拔</li>
+<h2 id="六、适用场景判断"><a href="#六、适用场景判断" class="headerlink" title="六、适用场景判断"></a>六、适用场景判断</h2><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs">是否有多场景路由？<br>├─ 否（单一场景）→ 不需要 Phase-Gate，保持简洁<br>└─ 是<br>   ├─ 场景数 ≤ 3，流程简单 → 可选，收益有限<br>   └─ 场景数 &gt; 3，流程复杂 → 强烈建议改造<br></code></pre></td></tr></table></figure>
+
+<hr>
+<h2 id="七、总结"><a href="#七、总结" class="headerlink" title="七、总结"></a>七、总结</h2><p>Phase-Gate 架构的核心价值：</p>
+<ol>
+<li><strong>职责清晰</strong>：每个 Phase 专注一件事</li>
+<li><strong>可观测 DEBUG</strong>：每个 Phase 输出 JSON，出问题能快速定位</li>
+<li><strong>容错回退</strong>：Gate 不通过则重做</li>
+<li><strong>可扩展</strong>：新增场景&#x2F;工具只需修改对应 Phase</li>
 </ol>
-<h3 id="什么时候该用这种模式"><a href="#什么时候该用这种模式" class="headerlink" title="什么时候该用这种模式"></a>什么时候该用这种模式</h3><table>
-<thead>
-<tr>
-<th>场景</th>
-<th>直接写函数</th>
-<th>用钩子</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>3-5 个扩展点</td>
-<td>✅ 简单直接</td>
-<td>❌ 过度设计</td>
-</tr>
-<tr>
-<td>10+ 个扩展点</td>
-<td>❌ 循环膨胀</td>
-<td>✅ 核心稳定</td>
-</tr>
-<tr>
-<td>需要第三方插件</td>
-<td>❌ 别人要改你代码</td>
-<td>✅ register 就行</td>
-</tr>
-<tr>
-<td>动态切换环境</td>
-<td>❌ 手动 if&#x2F;else</td>
-<td>✅ 按环境注册不同钩子</td>
-</tr>
-</tbody></table>
-<p><strong>不要在小项目里硬套钩子模式。等你觉得循环太乱的时候，自然就知道该重构了。</strong></p>
-<h3 id="本系列到目前为止的演进"><a href="#本系列到目前为止的演进" class="headerlink" title="本系列到目前为止的演进"></a>本系列到目前为止的演进</h3><figure class="highlight ada"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs ada">s01 Agent <span class="hljs-keyword">Loop</span>     → <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span> + stop_reason（驱动模型持续行动）<br>s02 Tool Definition → TOOLS + HANDLERS（扩展模型能力）<br>s03 Permission      → 执行前插一道权限门（安全保护）<br>s04 Hooks           → 功能挂在钩子上，循环保持干净（关注点分离）<br></code></pre></td></tr></table></figure>
-
-<hr>
-<p><em>本文基于 <a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">learn-claude-code</a> 项目 s04_hooks。</em></p>
-</div></article></div><div class="card"><div class="card-image"><a class="image is-7by3" href="/2026/06/01/blog-s02-tool-use/"><img class="fill" src="/img/tool-use-cover.png" alt="工具定义与分发：Agent 的能力从哪来"></a></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-01T06:00:00.000Z" title="2026/6/1 14:00:00">2026-06-01</time>发表</span><span class="level-item"><time dateTime="2026-06-01T06:00:00.000Z" title="2026/6/1 14:00:00">2026-06-01</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">13 分钟读完 (大约1984个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/06/01/blog-s02-tool-use/">工具定义与分发：Agent 的能力从哪来</a></p><div class="content"><blockquote>
-<p>本文是 <code>learn-claude-code</code> 系列的第二篇。s01 建立了 Agent 的核心循环（while True + stop_reason），s02 在这个循环上扩展——<strong>给 Agent 更多工具</strong>。</p>
-</blockquote>
-<hr>
-<h2 id="一、s01-的困境：只有一个-bash"><a href="#一、s01-的困境：只有一个-bash" class="headerlink" title="一、s01 的困境：只有一个 bash"></a>一、s01 的困境：只有一个 bash</h2><p>s01 的 Agent 只有一把锤子：<code>bash</code>。</p>
-<table>
-<thead>
-<tr>
-<th>想做的事</th>
-<th>实际上要写的命令</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>读 README.md</td>
-<td><code>cat README.md</code></td>
-</tr>
-<tr>
-<td>创建文件</td>
-<td><code>echo &quot;print(&#39;hi&#39;)&quot; &gt; test.py</code></td>
-</tr>
-<tr>
-<td>改一行文本</td>
-<td><code>sed -i &#39;s/foo/bar/&#39; file.py</code></td>
-</tr>
-<tr>
-<td>找 Python 文件</td>
-<td><code>find . -name &#39;*.py&#39;</code></td>
-</tr>
-</tbody></table>
-<p>模型想的是”读这个文件”，却要拼 shell 命令——多一层翻译，浪费 token，还容易拼错。</p>
-<hr>
-<h2 id="二、s02-教学版：5-个专用工具"><a href="#二、s02-教学版：5-个专用工具" class="headerlink" title="二、s02 教学版：5 个专用工具"></a>二、s02 教学版：5 个专用工具</h2><h3 id="工具定义（TOOLS-数组）"><a href="#工具定义（TOOLS-数组）" class="headerlink" title="工具定义（TOOLS 数组）"></a>工具定义（TOOLS 数组）</h3><p>每个工具是一个 JSON Schema，告诉模型：<strong>有这个工具、什么时候用、参数长什么样</strong>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><code class="hljs python">TOOLS = [<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;bash&quot;</span>,       <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Run a shell command.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>, <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;command&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;&#125;, <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;command&quot;</span>]&#125;&#125;,<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;read_file&quot;</span>,  <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Read file contents.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>, <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;path&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;, <span class="hljs-string">&quot;limit&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;integer&quot;</span>&#125;&#125;, <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;path&quot;</span>]&#125;&#125;,<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;write_file&quot;</span>, <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Write content to a file.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>, <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;path&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;, <span class="hljs-string">&quot;content&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;&#125;, <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;path&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>]&#125;&#125;,<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;edit_file&quot;</span>,  <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Replace exact text in a file once.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>, <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;path&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;, <span class="hljs-string">&quot;old_text&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;, <span class="hljs-string">&quot;new_text&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;&#125;, <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;path&quot;</span>, <span class="hljs-string">&quot;old_text&quot;</span>, <span class="hljs-string">&quot;new_text&quot;</span>]&#125;&#125;,<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;glob&quot;</span>,       <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Find files matching a glob pattern.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;object&quot;</span>, <span class="hljs-string">&quot;properties&quot;</span>: &#123;<span class="hljs-string">&quot;pattern&quot;</span>: &#123;<span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;string&quot;</span>&#125;&#125;, <span class="hljs-string">&quot;required&quot;</span>: [<span class="hljs-string">&quot;pattern&quot;</span>]&#125;&#125;,<br>]<br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 <code>description</code> 字段很重要——模型靠它判断”这个场景该用哪个工具”。描述越精准，模型选得越准。</p>
-</blockquote>
-<h3 id="工具实现（TOOL-HANDLERS）"><a href="#工具实现（TOOL-HANDLERS）" class="headerlink" title="工具实现（TOOL_HANDLERS）"></a>工具实现（TOOL_HANDLERS）</h3><p>定义是”告诉模型有这个工具”，实现是”真正干活”。两者通过查表分发关联：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python">TOOL_HANDLERS = &#123;<br>    <span class="hljs-string">&quot;bash&quot;</span>:       run_bash,<br>    <span class="hljs-string">&quot;read_file&quot;</span>:  run_read,<br>    <span class="hljs-string">&quot;write_file&quot;</span>: run_write,<br>    <span class="hljs-string">&quot;edit_file&quot;</span>:  run_edit,<br>    <span class="hljs-string">&quot;glob&quot;</span>:       run_glob,<br>&#125;<br></code></pre></td></tr></table></figure>
-
-<h3 id="查表分发"><a href="#查表分发" class="headerlink" title="查表分发"></a>查表分发</h3><p>s01 是硬编码调用，s02 改成查表——<strong>循环本身一行没改</strong>：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># s01: 硬编码</span><br>output = run_bash(block.<span class="hljs-built_in">input</span>[<span class="hljs-string">&quot;command&quot;</span>])<br><br><span class="hljs-comment"># s02: 查表分发</span><br>handler = TOOL_HANDLERS[block.name]   <span class="hljs-comment"># &quot;read_file&quot; → run_read</span><br>output = handler(**block.<span class="hljs-built_in">input</span>)        <span class="hljs-comment"># run_read(path=&quot;...&quot;, limit=None)</span><br></code></pre></td></tr></table></figure>
-
-<h3 id="加一个工具的代价"><a href="#加一个工具的代价" class="headerlink" title="加一个工具的代价"></a>加一个工具的代价</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 1. TOOLS 数组加一条    — 告诉模型有这个工具</span><br><span class="hljs-comment"># 2. TOOL_HANDLERS 加一行 — 写实现函数并注册</span><br><span class="hljs-comment"># 循环不变</span><br></code></pre></td></tr></table></figure>
-
-<hr>
-<h2 id="三、真正的-Claude-Code-怎么定义工具"><a href="#三、真正的-Claude-Code-怎么定义工具" class="headerlink" title="三、真正的 Claude Code 怎么定义工具"></a>三、真正的 Claude Code 怎么定义工具</h2><h3 id="对比表"><a href="#对比表" class="headerlink" title="对比表"></a>对比表</h3><table>
-<thead>
-<tr>
-<th>维度</th>
-<th>教学版 (s02)</th>
-<th>真实 Claude Code</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Schema 格式</td>
-<td>JSON Schema</td>
-<td>Zod Schema</td>
-</tr>
-<tr>
-<td>定义方式</td>
-<td><code>TOOLS</code> 数组（纯数据）</td>
-<td><code>buildTool()</code> 工厂函数（对象）</td>
-</tr>
-<tr>
-<td>实现与定义</td>
-<td>分离（TOOLS + HANDLERS）</td>
-<td>一体（同一个对象）</td>
-</tr>
-<tr>
-<td>参数校验</td>
-<td>无（纯依赖 schema）</td>
-<td>Zod 强校验 + <code>validateInput()</code></td>
-</tr>
-<tr>
-<td>并发控制</td>
-<td>无（顺序执行）</td>
-<td><code>isConcurrencySafe()</code> 分区</td>
-</tr>
-<tr>
-<td>结果处理</td>
-<td>全部返回</td>
-<td><code>maxResultSizeChars</code> 阈值 + 落盘</td>
-</tr>
-<tr>
-<td>权限</td>
-<td>仅 <code>safe_path</code></td>
-<td>5 步验证管线</td>
-</tr>
-</tbody></table>
-<h3 id="教学版-vs-真实-CC-的代码形状"><a href="#教学版-vs-真实-CC-的代码形状" class="headerlink" title="教学版 vs 真实 CC 的代码形状"></a>教学版 vs 真实 CC 的代码形状</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># ── 教学版 ──</span><br>TOOLS = [<br>    &#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;bash&quot;</span>, <span class="hljs-string">&quot;description&quot;</span>: <span class="hljs-string">&quot;Run a shell command.&quot;</span>,<br>     <span class="hljs-string">&quot;input_schema&quot;</span>: &#123;...&#125;&#125;,<br>]<br><br>TOOL_HANDLERS = &#123;<span class="hljs-string">&quot;bash&quot;</span>: run_bash&#125;<br><br><span class="hljs-comment"># 循环中查表调用</span><br>output = TOOL_HANDLERS[block.name](**block.<span class="hljs-built_in">input</span>)<br></code></pre></td></tr></table></figure>
-
-<figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-comment">// ── Claude Code 内部 ──</span><br><span class="hljs-keyword">const</span> bashTool = <span class="hljs-title function_">buildTool</span>(&#123;<br>  <span class="hljs-attr">name</span>: <span class="hljs-string">&quot;Bash&quot;</span>,<br>  <span class="hljs-attr">schema</span>: z.<span class="hljs-title function_">object</span>(&#123; <span class="hljs-attr">command</span>: z.<span class="hljs-title function_">string</span>() &#125;),  <span class="hljs-comment">// Zod，比 JSON Schema 更强大</span><br>  <span class="hljs-attr">description</span>: <span class="hljs-string">&quot;Run a shell command.&quot;</span>,<br>  <span class="hljs-attr">invoke</span>: <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> <span class="hljs-title function_">runBash</span>(input.<span class="hljs-property">command</span>),    <span class="hljs-comment">// 实现直接绑在工具对象上</span><br>  <span class="hljs-attr">isConcurrencySafe</span>: <span class="hljs-function">(<span class="hljs-params">input</span>) =&gt;</span> <span class="hljs-title function_">isReadOnly</span>(input.<span class="hljs-property">command</span>), <span class="hljs-comment">// 并发安全判断</span><br>  <span class="hljs-attr">maxResultSizeChars</span>: <span class="hljs-number">50_000</span>,                    <span class="hljs-comment">// 结果超限自动落盘</span><br>&#125;)<br></code></pre></td></tr></table></figure>
-
-<h3 id="关键差异"><a href="#关键差异" class="headerlink" title="关键差异"></a>关键差异</h3><p><strong>1. Schema 格式不同</strong></p>
-<p>教学版用 <code>JSON Schema</code>——API 原生支持，声明式。CC 内部用 <code>Zod Schema</code>——TypeScript 生态，支持复杂校验（正则、条件、变换）。但最终都是同一个目的：<strong>告诉模型参数长什么样</strong>。</p>
-<p><strong>2. 定义和实现在一起 vs 分开</strong></p>
-<p>教学版分开是为了教学清晰——一眼看到”加工具 &#x3D; 2 步”。CC 把它们打包成一个 <code>buildTool()</code> 调用，更方便做统一验证和注入。</p>
-<p><strong>3. 教学版没有的机制</strong></p>
-<ul>
-<li><strong>并发安全</strong>：只读工具（<code>read_file</code>、<code>glob</code>、<code>ls</code>）可以并行执行，写工具（<code>rm</code>、<code>write</code>）串行。CC 根据 <code>isConcurrencySafe</code> 自动分区</li>
-<li><strong>结果落盘</strong>：工具输出太大就写文件，模型只看到摘要 + 文件路径，避免上下文撑爆</li>
-<li><strong>5 步验证管线</strong>：Zod 校验 → validateInput → PreToolUse hooks → 权限检查 → 执行</li>
-</ul>
-<hr>
-<h2 id="四、Skill-中的工具定义和这里的差异"><a href="#四、Skill-中的工具定义和这里的差异" class="headerlink" title="四、Skill 中的工具定义和这里的差异"></a>四、Skill 中的工具定义和这里的差异</h2><p>这是一个非常容易混淆的点。<strong>Skill 和 Tool 不在同一个抽象层级。</strong></p>
-<h3 id="直观对比"><a href="#直观对比" class="headerlink" title="直观对比"></a>直观对比</h3><figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs sqf">┌─────────────────────────────────────────────┐<br>│               <span class="hljs-built_in">Agent</span> 运行机制                    │<br>│                                               │<br>│  用户提问 → <span class="hljs-built_in">Agent</span> Loop → 模型决定              │<br>│       ├── 调用 Tool（read_file / bash）        │<br>│       └── 普通回答                             │<br>│                                               │<br>│  用户输入 /<span class="hljs-built_in">skill</span> → <span class="hljs-built_in">Skill</span> 脚本启动              │<br>│       └── <span class="hljs-built_in">Skill</span> 内部再调 Tool 完成工作          │<br>│                                               │<br>└─────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
-
-<h3 id="对比表-1"><a href="#对比表-1" class="headerlink" title="对比表"></a>对比表</h3><table>
-<thead>
-<tr>
-<th>维度</th>
-<th>s02 中的 Tool</th>
-<th>Skill 中的 Tool</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>定义位置</strong></td>
-<td>在代码中硬编码 <code>TOOLS</code> 数组</td>
-<td>在 Skill 的 <code>.md</code> 文件 frontmatter 中声明</td>
-</tr>
-<tr>
-<td><strong>谁调用</strong></td>
-<td>模型<strong>自主决定</strong>调用</td>
-<td>Skill 脚本<strong>内部编排</strong>调用</td>
-</tr>
-<tr>
-<td><strong>调用方式</strong></td>
-<td>Agent Loop 自动分发</td>
-<td>通过 <code>Agent</code> 工具或代码手动调用</td>
-</tr>
-<tr>
-<td><strong>可见范围</strong></td>
-<td>所有对话回合可见</td>
-<td>仅在 Skill 执行期间可用</td>
-</tr>
-<tr>
-<td><strong>生命周期</strong></td>
-<td>随 Agent 启动而存在</td>
-<td>随 Skill 触发而加载，执行完释放</td>
-</tr>
-<tr>
-<td><strong>本质</strong></td>
-<td>基础能力单元（原子操作）</td>
-<td>高阶工作流（可组合多个 Tool）</td>
-</tr>
-</tbody></table>
-<h3 id="详细说明"><a href="#详细说明" class="headerlink" title="详细说明"></a>详细说明</h3><p><strong>s02 中的 Tool</strong>（如 <code>read_file</code>、<code>bash</code>）：</p>
-<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">定义：TOOLS = [&#123;<span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;read_file&quot;</span>, <span class="hljs-string">...</span>&#125;]<br>谁用：模型在 agent_loop 中自主选择<br>周期：整个对话生命周期都存在<br>目的：给模型基本能力——读、写、执行<br></code></pre></td></tr></table></figure>
-
-<p><strong>Skill 中的 Tool</strong>（如 <code>/graphify</code>）：</p>
-<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs sqf">定义：<span class="hljs-built_in">Skill</span> 的 frontmatter 中声明需要哪些 tool<br>谁用：<span class="hljs-built_in">Skill</span> 脚本编排，模型不直接决策<br>周期：仅当用户输入 /graphify 时加载<br>目的：完成一个高阶任务——分析代码、生成知识图谱<br></code></pre></td></tr></table></figure>
-
-<h3 id="举个例子"><a href="#举个例子" class="headerlink" title="举个例子"></a>举个例子</h3><p>你在 <code>/graphify</code> 这个 Skill 里，它的工作流程可能是：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">graphify</span>():<br>    <span class="hljs-comment"># Skill 内部编排多个工具调用</span><br>    code = read_file(<span class="hljs-string">&quot;code.py&quot;</span>)      <span class="hljs-comment"># 🛠 调 read_file</span><br>    deps = bash(<span class="hljs-string">&quot;pip list&quot;</span>)          <span class="hljs-comment"># 🛠 调 bash</span><br>    result = agent(<span class="hljs-string">&quot;分析这段代码&quot;</span>)   <span class="hljs-comment"># 👤 调子 Agent</span><br>    write_file(<span class="hljs-string">&quot;graph.json&quot;</span>, result) <span class="hljs-comment"># 🛠 调 write_file</span><br></code></pre></td></tr></table></figure>
-
-<p>这些 <code>read_file</code>、<code>bash</code>、<code>write_file</code> 就是 s02 定义的<strong>基础 Tool</strong>。Skill 是站在它们之上的编排层。</p>
-<h3 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h3><blockquote>
-<p><strong>Tool 是积木块，Skill 是搭建图纸。</strong><br>Tool 给模型最基本的能力，Skill 把这些能力组合成可复用的高阶工作流。</p>
-</blockquote>
-<hr>
-<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><h3 id="本系列到目前为止的演进"><a href="#本系列到目前为止的演进" class="headerlink" title="本系列到目前为止的演进"></a>本系列到目前为止的演进</h3><table>
-<thead>
-<tr>
-<th>章节</th>
-<th>核心概念</th>
-<th>一句话</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>s01</td>
-<td>Agent Loop</td>
-<td>while True + stop_reason，驱动模型持续行动</td>
-</tr>
-<tr>
-<td>s02</td>
-<td>Tool Definition &amp; Dispatch</td>
-<td>TOOLS + HANDLERS，扩展模型的能力边界</td>
-</tr>
-<tr>
-<td>后续</td>
-<td>权限、记忆、子代理…</td>
-<td>在循环上叠加保护机制</td>
-</tr>
-</tbody></table>
-<h3 id="三种工具定义的层次"><a href="#三种工具定义的层次" class="headerlink" title="三种工具定义的层次"></a>三种工具定义的层次</h3><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">教学版 (s02)             真实 Claude Code              Skill<br>┌──────────────┐      ┌──────────────────┐      ┌──────────────┐<br>│ TOOLS 数组    │      │ <span class="hljs-keyword">buildTool() </span>工厂  │      │ frontmatter   │<br>│ <span class="hljs-keyword">JSON </span><span class="hljs-keyword">Schema </span>  │      │ Zod <span class="hljs-keyword">Schema </span>      │      │ 声明式定义     │<br>│ + HANDLERS    │      │ 实现捆绑在对象上   │      │ + 脚本编排     │<br>│ 分离式         │      │ 一体式            │      │ 高阶组合式     │<br>└──────────────┘      └──────────────────┘      └──────────────┘<br>    教学友好                生产就绪               可复用工作流<br></code></pre></td></tr></table></figure>
-
-<hr>
-<p><em>本文基于 <a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">learn-claude-code</a> 项目 s02_tool_use。</em></p>
-</div></article></div><div class="card"><div class="card-image"><a class="image is-7by3" href="/2026/06/01/blog-s01-agent-loop/"><img class="fill" src="/img/agent-loop-cover.png" alt="手把手看 Agent Loop：一个循环如何驱动 AI 智能体"></a></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-01T02:00:00.000Z" title="2026/6/1 10:00:00">2026-06-01</time>发表</span><span class="level-item"><time dateTime="2026-06-01T02:00:00.000Z" title="2026/6/1 10:00:00">2026-06-01</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">14 分钟读完 (大约2167个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/06/01/blog-s01-agent-loop/">手把手看 Agent Loop：一个循环如何驱动 AI 智能体</a></p><div class="content"><blockquote>
-<p>本文用一段真实的 Agent Loop 执行过程，展示 AI 编码智能体的核心——<strong>一个循环如何让模型持续思考、行动、完成任务</strong>。</p>
-</blockquote>
-<hr>
-<h2 id="一、Agent-Loop：核心概念"><a href="#一、Agent-Loop：核心概念" class="headerlink" title="一、Agent Loop：核心概念"></a>一、Agent Loop：核心概念</h2><p>整个 AI 编码智能体的秘密就在一个循环里：</p>
-<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs smali">while stop_reason == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>    response = LLM(messages, tools)   <span class="hljs-comment"># 模型决定：要不要调工具？调什么？</span><br>   <span class="hljs-built_in"> execute </span>tools                      <span class="hljs-comment"># 执行模型要求的命令</span><br>    append results back to messages    <span class="hljs-comment"># 把结果喂回去，让模型继续思考</span><br></code></pre></td></tr></table></figure>
-
-<p>只有两种信号：</p>
-<table>
-<thead>
-<tr>
-<th>信号</th>
-<th>含义</th>
-<th>循环结果</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><code>stop_reason == &quot;tool_use&quot;</code></td>
-<td>模型说”我要调工具”</td>
-<td>执行工具 → 继续循环</td>
-</tr>
-<tr>
-<td><code>stop_reason != &quot;tool_use&quot;</code></td>
-<td>模型说”我做完了”</td>
-<td>退出循环，返回结果</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="二、核心代码"><a href="#二、核心代码" class="headerlink" title="二、核心代码"></a>二、核心代码</h2><p>以下是从 <code>learn-claude-code/s01_agent_loop/code.py</code> 中提取的核心逻辑（去掉调试打印后不到 20 行）：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages: <span class="hljs-built_in">list</span></span>):<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        <span class="hljs-comment"># 1. 把消息发给模型</span><br>        response = client.messages.create(<br>            model=MODEL, system=SYSTEM, messages=messages,<br>            tools=TOOLS, max_tokens=<span class="hljs-number">8000</span>,<br>        )<br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;assistant&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: response.content&#125;)<br>        <br>        <span class="hljs-comment"># 2. 判断是否继续</span><br>        <span class="hljs-keyword">if</span> response.stop_reason != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>            <span class="hljs-keyword">return</span>  <span class="hljs-comment"># 模型不调工具了，结束</span><br>        <br>        <span class="hljs-comment"># 3. 执行工具，收集结果</span><br>        results = []<br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                output = run_bash(block.<span class="hljs-built_in">input</span>[<span class="hljs-string">&quot;command&quot;</span>])<br>                results.append(&#123;<br>                    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;tool_result&quot;</span>,<br>                    <span class="hljs-string">&quot;tool_use_id&quot;</span>: block.<span class="hljs-built_in">id</span>,<br>                    <span class="hljs-string">&quot;content&quot;</span>: output,<br>                &#125;)<br>        <br>        <span class="hljs-comment"># 4. 把结果喂回去，继续循环</span><br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: results&#125;)<br></code></pre></td></tr></table></figure>
-
-<p>循环过程：</p>
-<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">用户提问 → <span class="hljs-keyword">LLM </span>推理 → 是否调工具？<br>    ├─ 否 → 返回回答 ✓<br>    └─ 是 → 执行命令 → 结果送回 <span class="hljs-keyword">LLM </span>→ 继续循环<br></code></pre></td></tr></table></figure>
-
-<p>模型负责<strong>决策</strong>（要不要调、调什么），harness 负责<strong>执行</strong>（调了就跑、结果喂回去）。这就是 Agent 模式的核心——<strong>ReAct（Reasoning + Acting）</strong>。</p>
-<hr>
-<h2 id="三、实战：一段完整的-Agent-Loop-过程"><a href="#三、实战：一段完整的-Agent-Loop-过程" class="headerlink" title="三、实战：一段完整的 Agent Loop 过程"></a>三、实战：一段完整的 Agent Loop 过程</h2><p>我向智能体提了一个问题：</p>
-<blockquote>
-<p><strong>我：</strong> 当前目录下 code.py 有多少行代码，主要功能是什么？</p>
-</blockquote>
-<p>AI 并不知道答案，它必须自己去探索。下面是完整的执行过程。</p>
-<hr>
-<h3 id="第-1-轮：尝试直接统计"><a href="#第-1-轮：尝试直接统计" class="headerlink" title="第 1 轮：尝试直接统计"></a>第 1 轮：尝试直接统计</h3><p>模型决定先看看行数。它用 <code>wc -l</code> 直接统计：</p>
-<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs nix">━ 发送给模型的 messages (循环第 <span class="hljs-number">1</span> 轮) ━<br>  <span class="hljs-params">system:</span> You are a coding agent at <span class="hljs-symbol">/home/yl/work/agent_2026/agent_learn_hub/learn-claude-code.</span> Use bash to solve tasks. Act, don&#x27;t explain.<br>  messages 共 <span class="hljs-number">1</span> 条:<br>    [<span class="hljs-number">0</span>] role<span class="hljs-operator">=</span>user  | 当前目录下 code.py 有多少行代码，主要功能是什么？<br><br>─ 模型返回 (循环第 <span class="hljs-number">1</span> 轮) ─<br>  <span class="hljs-params">model:</span>         claude-sonnet-<span class="hljs-number">4</span><span class="hljs-operator">-</span><span class="hljs-number">20250514</span><br>  <span class="hljs-params">stop_reason:</span>   tool_use<br><br>  content[<span class="hljs-number">0</span>]:<br>    <span class="hljs-params">type:</span> tool_use<br>    <span class="hljs-params">name:</span> bash<br>    <span class="hljs-params">input:</span> &#123;<span class="hljs-string">&quot;command&quot;</span>: <span class="hljs-string">&quot;wc -l &lt; code.py&quot;</span>&#125;<br><br>🔄 stop_reason<span class="hljs-operator">=</span>&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 模型第一次尝试：<code>wc -l &lt; code.py</code>。直截了当——先看文件存不存在、多少行。</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">wc</span> -l &lt; code.py<br>/bin/sh: 1: cannot open code.py: No such file<br></code></pre></td></tr></table></figure>
-
-<p><strong>出错了！</strong> 当前目录没有 <code>code.py</code>。模型得到这个错误后，它没有放弃——而是进入下一轮，调整策略。</p>
-<hr>
-<h3 id="第-2-轮：换方式尝试"><a href="#第-2-轮：换方式尝试" class="headerlink" title="第 2 轮：换方式尝试"></a>第 2 轮：换方式尝试</h3><p>模型收到”文件不存在”的错误，决定再试试 <code>cat</code>：</p>
-<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 2 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">用户想知道当前目录下 code.py 文件有多少行代码...</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;cat code.py&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 注意！这一轮多了 <code>thinking</code> 块——模型在”思考”。它意识到刚才失败了，换另一种方式继续。</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">cat</span> code.py<br><span class="hljs-built_in">cat</span>: code.py: 没有那个文件或目录<br></code></pre></td></tr></table></figure>
-
-<p><strong>还是找不到。</strong> 连续两次直接访问都失败了。模型需要改变策略——不再假设文件在当前目录，而是先看看目录里有什么。</p>
-<hr>
-<h3 id="第-3-轮：探索目录结构"><a href="#第-3-轮：探索目录结构" class="headerlink" title="第 3 轮：探索目录结构"></a>第 3 轮：探索目录结构</h3><p>模型意识到直接找不行，需要先了解当前环境：</p>
-<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 3 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">看起来当前目录下没有 code.py 文件。让我先看看当前目录下有什么文件。</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;ls -la&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 模型”推理”出来了：当前目录没有这个文件，那需要先看目录结构。这是 ReAct 模式的关键——模型能根据结果动态调整下一步。</p>
-</blockquote>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">ls</span> -la<br>总计 244<br>drwxrwxr-x 29 yl yl  4096  5月 29 17:37 .<br>drwxrwxr-x  7 yl yl  4096  5月 29 14:58 ..<br>drwxrwxr-x  2 yl yl  4096  5月 29 14:53 agents<br>-rw-rw-r--  1 yl yl  9842  5月 29 17:37 blog-s01-agent-loop.md<br>drwxrwxr-x  2 yl yl  4096  5月 29 14:53 s01_agent_loop<br>...<br></code></pre></td></tr></table></figure>
-
-<p>模型看到目录结构了——这是一个多章节项目，每个 <code>s*</code> 目录下可能有自己的 <code>code.py</code>。</p>
-<hr>
-<h3 id="第-4-轮：全局搜索目标文件"><a href="#第-4-轮：全局搜索目标文件" class="headerlink" title="第 4 轮：全局搜索目标文件"></a>第 4 轮：全局搜索目标文件</h3><p>有了目录结构信息，模型决定在整个项目中搜索所有 <code>code.py</code>：</p>
-<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 4 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">有很多 code.py 文件...</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;find . -name &#x27;code.py&#x27; -type f 2&gt;/dev/null&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
-
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ find . -name <span class="hljs-string">&#x27;code.py&#x27;</span> -<span class="hljs-built_in">type</span> f 2&gt;/dev/null<br>./s17_autonomous_agents/code.py<br>./s15_agent_teams/code.py<br>./s20_comprehensive/code.py<br>./s07_skill_loading/code.py<br>./s03_permission/code.py<br>./s02_tool_use/code.py<br>./s18_worktree_isolation/code.py<br>./s06_subagent/code.py<br>...<br></code></pre></td></tr></table></figure>
-
-<p>好，找到了 <strong>20 个</strong> <code>code.py</code>！现在模型有了完整的信息。</p>
-<hr>
-<h3 id="第-5-轮：综合回答"><a href="#第-5-轮：综合回答" class="headerlink" title="第 5 轮：综合回答"></a>第 5 轮：综合回答</h3><p>模型收集了所有信息，现在可以给出最终答案了：</p>
-<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs stylus">─ 模型返回 (循环第 <span class="hljs-number">5</span> 轮) ─<br>  model:         claude-sonnet-<span class="hljs-number">4</span>-<span class="hljs-number">20250514</span><br>  stop_reason:   end_turn<br><br>  <span class="hljs-attribute">content</span>[<span class="hljs-number">0</span>]:<br>    type: <span class="hljs-selector-tag">text</span><br>    <span class="hljs-selector-tag">text</span>: 当前目录下并没有 <span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span> 文件。<br><br>不过在项目的各个子目录中找到了 <span class="hljs-number">20</span> 个 <span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span> 文件，分别位于：<br>- s01_agent_loop/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- s02_tool_use/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- s03_permission/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- ...<br><br>✅ stop_reason=<span class="hljs-string">&#x27;end_turn&#x27;</span> → 循环结束!<br>总循环轮数: <span class="hljs-number">4</span><br></code></pre></td></tr></table></figure>
-
-<blockquote>
-<p>💡 <code>stop_reason</code> 变成了 <code>end_turn</code>——模型不再调用工具了，认为任务已经完成，直接输出文本回答。循环自然终结。</p>
-</blockquote>
-<hr>
-<h2 id="四、全过程复盘"><a href="#四、全过程复盘" class="headerlink" title="四、全过程复盘"></a>四、全过程复盘</h2><h3 id="执行路径一览"><a href="#执行路径一览" class="headerlink" title="执行路径一览"></a>执行路径一览</h3><table>
-<thead>
-<tr>
-<th>轮次</th>
-<th>模型在想什么</th>
-<th>调用了什么</th>
-<th>结果</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>R1</td>
-<td>先看文件行数</td>
-<td><code>wc -l &lt; code.py</code></td>
-<td>❌ 文件不存在</td>
-</tr>
-<tr>
-<td>R2</td>
-<td>再试一种方式</td>
-<td><code>cat code.py</code></td>
-<td>❌ 还是不存在</td>
-</tr>
-<tr>
-<td>R3</td>
-<td>看看目录结构</td>
-<td><code>ls -la</code></td>
-<td>✅ 看到 29 个子目录</td>
-</tr>
-<tr>
-<td>R4</td>
-<td>全局搜索</td>
-<td><code>find . -name &#39;code.py&#39;</code></td>
-<td>✅ 找到 20 个文件</td>
-</tr>
-<tr>
-<td>R5</td>
-<td>综合信息，直接回答</td>
-<td>无 (end_turn)</td>
-<td>✅ 循环结束</td>
-</tr>
-</tbody></table>
-<h3 id="关键观察"><a href="#关键观察" class="headerlink" title="关键观察"></a>关键观察</h3><p><strong>1. 错误不是终点，而是信号</strong></p>
-<p><code>wc -l</code> 返回错误后，模型没有崩溃——它把错误当成新信息，调整策略继续尝试。这是 Agent 模式与普通程序最大的区别：<strong>错误被喂回模型，让模型自己修正</strong>。</p>
-<p><strong>2. 思维链（Chain-of-Thought）自动涌现</strong></p>
-<p>第 2 轮开始出现了 <code>thinking</code> 块，模型在公开自己的推理过程：”看起来当前目录下没有 code.py 文件。让我先看看当前目录下有什么文件。” 这不是提示词要求的——是模型自然习得的推理能力。</p>
-<p><strong>3. 从直接到迂回，策略动态调整</strong></p>
-<p>模型的三次尝试策略越来越聪明：</p>
-<ul>
-<li>R1：直接访问（<code>wc -l</code>）</li>
-<li>R2：换个方式访问（<code>cat</code>）</li>
-<li>R3：先了解环境（<code>ls</code>），再精确定位（<code>find</code>）</li>
-</ul>
-<p>这种”失败 → 调整 → 再尝试”的迭代过程，正是人类工程师面对未知问题时的自然反应。</p>
-<p><strong>4. 循环次数&#x3D;智能程度</strong></p>
-<p>这个例子跑了 4 轮。更复杂的任务可能跑几十轮甚至上百轮。每一轮都是：<strong>模型推理 → 行动 → 观察结果 → 再次推理</strong>。</p>
-<hr>
-<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><p>Agent Loop 的核心哲学：</p>
-<blockquote>
-<p><strong>人类给方向，AI 负责执行路径上的所有细节决策。</strong></p>
-</blockquote>
-<ul>
-<li>你不需要告诉它”先用 ls，再用 find”——它自己会决定</li>
-<li>你不需要处理错误——它收到错误会自动调整策略</li>
-<li>你只需要一个循环、一个工具，就能让模型持续行动</li>
-</ul>
-<p>这个最小的 20 行 <code>while True</code>，就是所有 AI 编码智能体的基础。后面的安全、权限、记忆、协作等机制，都是在这之上叠加的图层。但核心永不变：</p>
-<p><strong>循环不终结，智能不停止。</strong></p>
-<hr>
-<p><em>本文基于 <a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">learn-claude-code</a> 项目 s01_agent_loop 的真实运行过程。</em></p>
-</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-05-29T10:02:09.329Z" title="2026/5/29 18:02:09">2026-05-29</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:02:09.330Z" title="2026/5/29 18:02:09">2026-05-29</time>更新</span><span class="level-item">2 分钟读完 (大约327个字)</span></div></div><div class="content"><p>以下是为银河麒麟 V10（ARM64）系统安装 Tailscale 并配置开机自启的完整步骤总结文档，可直接复制保存为 <code>.md</code> 文件。</p>
+<p>它不是银弹——简单场景（≤3 个场景）反而增加不必要的复杂度。但对于<strong>场景多、工具多、有依赖链</strong>的复杂业务，效果显著。</p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-04-16T07:06:20.517Z" title="2026/4/16 15:06:20">2026-04-16</time>发表</span><span class="level-item"><time dateTime="2026-04-16T07:06:47.578Z" title="2026/4/16 15:06:47">2026-04-16</time>更新</span><span class="level-item">2 分钟读完 (大约327个字)</span></div></div><div class="content"><p>以下是为银河麒麟 V10（ARM64）系统安装 Tailscale 并配置开机自启的完整步骤总结文档，可直接复制保存为 <code>.md</code> 文件。</p>
 <figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs markdown"><span class="hljs-section"># 银河麒麟 V10 (ARM64) 安装 Tailscale 并配置开机自启</span><br><br><span class="hljs-section">## 1. 下载并安装 Tailscale 静态二进制文件</span><br><br><span class="hljs-code">```bash</span><br><span class="hljs-code"># 下载适用于 ARM64 的静态二进制包（以 v1.70.0 为例，请根据实际版本调整）</span><br><span class="hljs-code">wget https://pkgs.tailscale.com/stable/tailscale_1.70.0_arm64.tgz</span><br><span class="hljs-code"></span><br><span class="hljs-code"># 解压</span><br><span class="hljs-code">tar xzvf tailscale_1.70.0_arm64.tgz</span><br><span class="hljs-code"></span><br><span class="hljs-code"># 进入解压目录并复制二进制文件到系统路径</span><br><span class="hljs-code">cd tailscale_1.70.0_arm64</span><br><span class="hljs-code">sudo cp tailscale tailscaled /usr/local/bin/</span><br></code></pre></td></tr></table></figure>
 
 <h2 id="2-首次手动启动并完成认证（仅第一次需要）"><a href="#2-首次手动启动并完成认证（仅第一次需要）" class="headerlink" title="2. 首次手动启动并完成认证（仅第一次需要）"></a>2. 首次手动启动并完成认证（仅第一次需要）</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动 tailscaled 守护进程（前台后台均可，这里后台运行）</span><br><span class="hljs-built_in">sudo</span> tailscaled --state=/var/lib/tailscale/tailscaled.state &amp;<br><br><span class="hljs-comment"># 等待 2-3 秒后执行认证，会输出一个登录链接</span><br><span class="hljs-built_in">sudo</span> tailscale up<br></code></pre></td></tr></table></figure>
@@ -744,7 +204,20 @@
 <pre><code>
 直接复制以上内容保存为 `tailscale_install_guide.md` 即可。
 </code></pre>
-</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-12T16:00:00.000Z" title="2026/3/13 00:00:00">2026-03-13</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:02:00.518Z" title="2026/5/29 18:02:00">2026-05-29</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></span><span class="level-item">9 分钟读完 (大约1403个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/13/openclaw-http-api-guide---e5d65f02-f53e-4f66-980b-48c87fca1282/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><div class="content"><h1 id="OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索"><a href="#OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索" class="headerlink" title="OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索"></a>OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文记录了我探索 OpenClaw HTTP API 的全过程，包括如何启用 API、进行文本对话，以及最终实现文件上传功能。特别深入分析了文件上传的各种尝试和踩坑经历。</p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-04-05T00:06:20.066Z" title="2026/4/5 08:06:20">2026-04-05</time>发表</span><span class="level-item"><time dateTime="2024-11-03T12:40:38.000Z" title="2024/11/3 20:40:38">2024-11-03</time>更新</span><span class="level-item">1 分钟读完 (大约123个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/04/05/hello-world/">Hello World</a></p><div class="content"><p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
+
+<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-12T16:00:00.000Z" title="2026/3/13 00:00:00">2026-03-13</time>发表</span><span class="level-item"><time dateTime="2026-03-13T09:42:23.000Z" title="2026/3/13 17:42:23">2026-03-13</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></span><span class="level-item">9 分钟读完 (大约1403个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/13/openclaw-http-api-guide/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><div class="content"><h1 id="OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索"><a href="#OpenClaw-HTTP-API-使用指南：从配置到文件上传的完整探索" class="headerlink" title="OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索"></a>OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</h1><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>本文记录了我探索 OpenClaw HTTP API 的全过程，包括如何启用 API、进行文本对话，以及最终实现文件上传功能。特别深入分析了文件上传的各种尝试和踩坑经历。</p>
 <hr>
 <h2 id="一、启用-OpenClaw-HTTP-API"><a href="#一、启用-OpenClaw-HTTP-API" class="headerlink" title="一、启用 OpenClaw HTTP API"></a>一、启用 OpenClaw HTTP API</h2><p>首先需要修改 OpenClaw 配置文件 <code>~/.openclaw/config.json</code>，启用 responses API：</p>
 <figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs json"><span class="hljs-punctuation">&#123;</span><br>  <span class="hljs-attr">&quot;gateway&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>    <span class="hljs-attr">&quot;http&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>      <span class="hljs-attr">&quot;endpoints&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>        <span class="hljs-attr">&quot;responses&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">&#123;</span><br>          <span class="hljs-attr">&quot;enabled&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span><br>        <span class="hljs-punctuation">&#125;</span><br>      <span class="hljs-punctuation">&#125;</span><br>    <span class="hljs-punctuation">&#125;</span><br>  <span class="hljs-punctuation">&#125;</span><br><span class="hljs-punctuation">&#125;</span><br></code></pre></td></tr></table></figure>
@@ -770,7 +243,7 @@
 <h3 id="阶段-2：尝试标准-input-file-格式（失败）"><a href="#阶段-2：尝试标准-input-file-格式（失败）" class="headerlink" title="阶段 2：尝试标准 input_file 格式（失败）"></a>阶段 2：尝试标准 input_file 格式（失败）</h3><p>参考 OpenAI API 文档，尝试使用 <code>input_file</code> 类型：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><code class="hljs bash">FILE_BASE64=$(<span class="hljs-built_in">base64</span> -w 0 sample-data.txt)<br><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: &quot;请分析...&quot;</span><br><span class="hljs-string">        &#125;,</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">          &quot;source&quot;: &#123;</span><br><span class="hljs-string">            &quot;type&quot;: &quot;base64&quot;,</span><br><span class="hljs-string">            &quot;media_type&quot;: &quot;text/plain&quot;,</span><br><span class="hljs-string">            &quot;data&quot;: &quot;&#x27;</span><span class="hljs-string">&quot;<span class="hljs-variable">$FILE_BASE64</span>&quot;</span><span class="hljs-string">&#x27;&quot;</span><br><span class="hljs-string">          &#125;</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
 
-<p><strong>结果</strong>：❌ 返回 <code>{&quot;error&quot;:{&quot;message&quot;:&quot;Unauthorized&quot;,&quot;type&quot;:&quot;unauthorized&quot;}}</code></p>
+<p><strong>结果</strong>：❌ 返回 <code>&#123;&quot;error&quot;:&#123;&quot;message&quot;:&quot;Unauthorized&quot;,&quot;type&quot;:&quot;unauthorized&quot;&#125;&#125;</code></p>
 <p><strong>问题分析</strong>：</p>
 <ul>
 <li>错误地将 <code>input_file</code> 放在了 <code>input</code> 数组中作为独立 item</li>
@@ -793,7 +266,7 @@
 <h3 id="阶段-4：尝试-URL-方式上传（失败）"><a href="#阶段-4：尝试-URL-方式上传（失败）" class="headerlink" title="阶段 4：尝试 URL 方式上传（失败）"></a>阶段 4：尝试 URL 方式上传（失败）</h3><p>尝试通过本地 HTTP 服务器提供文件：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs bash"><span class="hljs-comment"># 启动本地服务器</span><br>python3 -m http.server 8080 &amp;<br><br><span class="hljs-comment"># 尝试通过 URL 访问</span><br>curl -sS http://127.0.0.1:18789/v1/responses \<br>    -H <span class="hljs-string">&#x27;Authorization: Bearer YOUR_TOKEN&#x27;</span> \<br>    -d <span class="hljs-string">&#x27;&#123;</span><br><span class="hljs-string">      &quot;model&quot;: &quot;openclaw&quot;,</span><br><span class="hljs-string">      &quot;input&quot;: [</span><br><span class="hljs-string">        &#123;</span><br><span class="hljs-string">          &quot;type&quot;: &quot;message&quot;,</span><br><span class="hljs-string">          &quot;role&quot;: &quot;user&quot;,</span><br><span class="hljs-string">          &quot;content&quot;: [</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_text&quot;,</span><br><span class="hljs-string">              &quot;text&quot;: &quot;请分析这个销售数据报告&quot;</span><br><span class="hljs-string">            &#125;,</span><br><span class="hljs-string">            &#123;</span><br><span class="hljs-string">              &quot;type&quot;: &quot;input_file&quot;,</span><br><span class="hljs-string">              &quot;source&quot;: &#123;</span><br><span class="hljs-string">                &quot;type&quot;: &quot;url&quot;,</span><br><span class="hljs-string">                &quot;url&quot;: &quot;http://localhost:8080/sample-data.txt&quot;</span><br><span class="hljs-string">              &#125;</span><br><span class="hljs-string">            &#125;</span><br><span class="hljs-string">          ]</span><br><span class="hljs-string">        &#125;</span><br><span class="hljs-string">      ]</span><br><span class="hljs-string">    &#125;&#x27;</span><br></code></pre></td></tr></table></figure>
 
-<p><strong>结果</strong>：❌ 返回 <code>{&quot;error&quot;:{&quot;message&quot;:&quot;invalid request&quot;,&quot;type&quot;:&quot;invalid_request_error&quot;}}</code></p>
+<p><strong>结果</strong>：❌ 返回 <code>&#123;&quot;error&quot;:&#123;&quot;message&quot;:&quot;invalid request&quot;,&quot;type&quot;:&quot;invalid_request_error&quot;&#125;&#125;</code></p>
 <p><strong>原因分析</strong>（通过阅读源码）：</p>
 <p>在 <code>input-files.ts</code> 中，<code>fetchWithGuard</code> 函数配置了 SSRF 防护：</p>
 <figure class="highlight typescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs typescript"><span class="hljs-attr">policy</span>: &#123;<br>  <span class="hljs-attr">allowPrivateNetwork</span>: <span class="hljs-literal">false</span>,  <span class="hljs-comment">// 硬编码，禁止私有网络</span><br>  <span class="hljs-attr">hostnameAllowlist</span>: limits.<span class="hljs-property">urlAllowlist</span>,<br>&#125;<br></code></pre></td></tr></table></figure>
@@ -868,7 +341,7 @@
 </ul>
 </li>
 </ul>
-</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-10T16:00:00.000Z" title="2026/3/11 00:00:00">2026-03-11</time>发表</span><span class="level-item"><time dateTime="2026-05-29T10:01:35.796Z" title="2026/5/29 18:01:35">2026-05-29</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Docker/">Docker</a></span><span class="level-item">9 分钟读完 (大约1287个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution---6808f7f2-0ebc-41cd-bf01-d52b71d88653/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><div class="content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在麒麟（Kylin）ARM64 系统上使用 Docker 时，遇到了一系列问题。从最开始的代理配置，到拉取 Ubuntu 镜像时反复出现的 <code>archive/tar: invalid tar header</code> 错误，折腾了不少时间。本文将完整记录排查过程及最终解决方案，希望能帮助到遇到同样问题的朋友。</p>
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-03-10T16:00:00.000Z" title="2026/3/11 00:00:00">2026-03-11</time>发表</span><span class="level-item"><time dateTime="2026-03-11T01:08:45.000Z" title="2026/3/11 09:08:45">2026-03-11</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Docker/">Docker</a></span><span class="level-item">9 分钟读完 (大约1287个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><div class="content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在麒麟（Kylin）ARM64 系统上使用 Docker 时，遇到了一系列问题。从最开始的代理配置，到拉取 Ubuntu 镜像时反复出现的 <code>archive/tar: invalid tar header</code> 错误，折腾了不少时间。本文将完整记录排查过程及最终解决方案，希望能帮助到遇到同样问题的朋友。</p>
 <hr>
 <h2 id="1-先跑通简单镜像：代理配置"><a href="#1-先跑通简单镜像：代理配置" class="headerlink" title="1. 先跑通简单镜像：代理配置"></a>1. 先跑通简单镜像：代理配置</h2><p>刚安装好 Docker，执行 <code>docker pull hello-world</code> 验证基础功能，却遇到错误：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ docker pull hello-world<br>Using default tag: latest<br>Error response from daemon: Get https://registry-1.docker.io/v2/: proxyconnect tcp: dial tcp 127.0.0.1:7890: connect: connection refused<br></code></pre></td></tr></table></figure>
@@ -936,7 +409,21 @@
 </ul>
 <p>希望本文能帮助遇到同样坑的朋友节省排查时间。如果你在麒麟或其他 ARM64 发行版上也有类似经历，欢迎交流讨论！</p>
 <hr>
-</div></article></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="Solwarda"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Solwarda</p><p class="is-size-6 is-block">个人博客</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives/"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories/"><p class="title">3</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags/"><p class="title">19</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Solwarda" target="_blank" rel="me noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/"><span class="level-start"><span class="level-item">技术探索</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-02T06:00:00.000Z">2026-06-02</time></p><p class="title"><a href="/2026/06/02/blog-s05-todo-write/">不给 Agent 加能力，只加结构 — s05 TodoWrite 学习笔记</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T08:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s04-hooks/">Hooks 机制：把扩展挂在循环外，而不是塞进循环里</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T06:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s02-tool-use/">工具定义与分发：Agent 的能力从哪来</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T02:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s01-agent-loop/">手把手看 Agent Loop：一个循环如何驱动 AI 智能体</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-05-29T10:02:09.329Z">2026-05-29</time></p><p class="title"><a href="/2026/05/29/tailScale---fb76d0a8-d711-487b-b26b-a7477e2681bf/"> </a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2026/06/"><span class="level-start"><span class="level-item">六月 2026</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/05/"><span class="level-start"><span class="level-item">五月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/03/"><span class="level-start"><span class="level-item">三月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/AI-Agent/"><span class="tag">AI Agent</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ARM64/"><span class="tag">ARM64</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Agent-Loop/"><span class="tag">Agent Loop</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Claude-Code/"><span class="tag">Claude Code</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HTTP-API/"><span class="tag">HTTP API</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Hooks/"><span class="tag">Hooks</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/OpenClaw/"><span class="tag">OpenClaw</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Skill/"><span class="tag">Skill</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/TodoWrite/"><span class="tag">TodoWrite</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tool-Definition/"><span class="tag">Tool Definition</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tool-Use/"><span class="tag">Tool Use</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unpigz/"><span class="tag">unpigz</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E4%BA%8B%E4%BB%B6%E5%9B%9E%E8%B0%83/"><span class="tag">事件回调</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><span class="tag">任务管理</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%AE%9E%E6%88%98/"><span class="tag">实战</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="tag">文件上传</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E8%A7%84%E5%88%92/"><span class="tag">规划</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E9%BA%92%E9%BA%9F/"><span class="tag">麒麟</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a><p class="is-size-7"><span>&copy; 2026 Solwarda</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2026 Solwarda</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+</div></article></div><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-02-27T02:00:00.000Z" title="2026/2/27 10:00:00">2026-02-27</time>发表</span><span class="level-item"><time dateTime="2026-02-27T02:12:03.000Z" title="2026/2/27 10:12:03">2026-02-27</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/">默认分类</a></span><span class="level-item">几秒读完 (大约96个字)</span></div></div><p class="title is-3 is-size-4-mobile"><a class="link-muted" href="/2026/02/27/welcome/">欢迎来到我的博客</a></p><div class="content"><p>欢迎来到我的个人博客！</p>
+<p>这是使用 Hexo + GitHub Pages 搭建的博客系统。</p>
+<h2 id="博客特点"><a href="#博客特点" class="headerlink" title="博客特点"></a>博客特点</h2><ul>
+<li>简洁美观的主题</li>
+<li>部署简单</li>
+<li>支持 Markdown 写作</li>
+</ul>
+<h2 id="快速开始"><a href="#快速开始" class="headerlink" title="快速开始"></a>快速开始</h2><ol>
+<li>修改 <code>_config.yml</code> 中的站点信息</li>
+<li>在 <code>source/_posts</code> 目录下创建新的 Markdown 文件</li>
+<li>运行 <code>hexo server</code> 本地预览</li>
+<li>运行 <code>hexo deploy</code> 部署到 GitHub Pages</li>
+</ol>
+<p>祝写作愉快！</p>
+</div></article></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="Solwarda"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Solwarda</p><p class="is-size-6 is-block">个人博客</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives/"><p class="title">6</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories/"><p class="title">3</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags/"><p class="title">11</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Solwarda" target="_blank" rel="me noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/"><span class="level-start"><span class="level-item">技术探索</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/%E9%BB%98%E8%AE%A4%E5%88%86%E7%B1%BB/"><span class="level-start"><span class="level-item">默认分类</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-15T16:00:00.000Z">2026-06-16</time></p><p class="title"><a href="/2026/06/16/cmos-skill-phase-gate-transform/">从 445 行到 224 行：Skill Phase-Gate 架构改造经验</a></p><p class="categories"><a href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-04-16T07:06:20.517Z">2026-04-16</time></p><p class="title"><a href="/2026/04/16/tailScale/"> </a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-04-05T00:06:20.066Z">2026-04-05</time></p><p class="title"><a href="/2026/04/05/hello-world/">Hello World</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-12T16:00:00.000Z">2026-03-13</time></p><p class="title"><a href="/2026/03/13/openclaw-http-api-guide/">OpenClaw HTTP API 使用指南：从配置到文件上传的完整探索</a></p><p class="categories"><a href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/">技术探索</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-03-10T16:00:00.000Z">2026-03-11</time></p><p class="title"><a href="/2026/03/11/qilin-arm64-docker-troubleshooting-solution/">麒麟 ARM64 系统 Docker 踩坑记：从代理配置到&quot;invalid tar header&quot;的终极解决方案</a></p><p class="categories"><a href="/categories/Docker/">Docker</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2026/06/"><span class="level-start"><span class="level-item">六月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/04/"><span class="level-start"><span class="level-item">四月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/03/"><span class="level-start"><span class="level-item">三月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/02/"><span class="level-start"><span class="level-item">二月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/ARM64/"><span class="tag">ARM64</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/CMOS/"><span class="tag">CMOS</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HTTP-API/"><span class="tag">HTTP API</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/OpenClaw/"><span class="tag">OpenClaw</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unpigz/"><span class="tag">unpigz</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%8D%9A%E5%AE%A2/"><span class="tag">博客</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="tag">文件上传</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%AC%A2%E8%BF%8E/"><span class="tag">欢迎</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E7%BB%8F%E9%AA%8C%E6%80%BB%E7%BB%93/"><span class="tag">经验总结</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E9%BA%92%E9%BA%9F/"><span class="tag">麒麟</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a><p class="is-size-7"><span>&copy; 2026 Solwarda</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2026 Solwarda</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
             article: {
                 highlight: {
                     clipboard: true,
@@ -953,6 +440,6 @@
                 }
                 $('.justified-gallery').justifiedGallery();
             }
-        });</script><!--!--><!--!--><script src="https://cdn.jsdelivr.net"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script data-pjax src="/js/insight.js" defer></script><script data-pjax>document.addEventListener('DOMContentLoaded', function () {
+        });</script><!--!--><!--!--><script src="https://cdn.jsdelivr.net"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
             loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
         });</script></body></html>
