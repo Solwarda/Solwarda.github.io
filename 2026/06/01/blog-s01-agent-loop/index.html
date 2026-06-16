@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>手把手看 Agent Loop：一个循环如何驱动 AI 智能体 - My Blog</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="My Blog"><meta name="msapplication-TileImage" content="/img/favicon.svg"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="My Blog"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="用一次真实的 agent loop 执行过程，带你看懂 AI 编码智能体如何一步步思考、调用工具、完成任务。"><meta property="og:type" content="blog"><meta property="og:title" content="手把手看 Agent Loop：一个循环如何驱动 AI 智能体"><meta property="og:url" content="https://solwarda.github.io/2026/06/01/blog-s01-agent-loop/"><meta property="og:site_name" content="My Blog"><meta property="og:description" content="用一次真实的 agent loop 执行过程，带你看懂 AI 编码智能体如何一步步思考、调用工具、完成任务。"><meta property="og:locale" content="zh_CN"><meta property="og:image" content="https://solwarda.github.io/img/agent-loop-cover.png"><meta property="article:published_time" content="2026-06-01T02:00:00.000Z"><meta property="article:modified_time" content="2026-06-01T02:00:00.000Z"><meta property="article:author" content="Solwarda"><meta property="article:tag" content="Claude Code"><meta property="article:tag" content="AI Agent"><meta property="article:tag" content="Agent Loop"><meta property="article:tag" content="实战"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://solwarda.github.io/img/agent-loop-cover.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://solwarda.github.io/2026/06/01/blog-s01-agent-loop/"},"headline":"手把手看 Agent Loop：一个循环如何驱动 AI 智能体","image":["https://solwarda.github.io/img/agent-loop-cover.png"],"datePublished":"2026-06-01T02:00:00.000Z","dateModified":"2026-06-01T02:00:00.000Z","author":{"@type":"Person","name":"Solwarda"},"publisher":{"@type":"Organization","name":"My Blog","logo":{"@type":"ImageObject","url":"https://solwarda.github.io/img/logo.svg"}},"description":"用一次真实的 agent loop 执行过程，带你看懂 AI 编码智能体如何一步步思考、调用工具、完成任务。"}</script><link rel="canonical" href="https://solwarda.github.io/2026/06/01/blog-s01-agent-loop/"><link rel="icon" href="/img/favicon.svg"><link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0"><link data-pjax rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href=""><link data-pjax rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net"><link rel="stylesheet" href="https://cdn.jsdelivr.net"><!--!--><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 8.1.2"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">首页</a><a class="navbar-item" href="/archives">归档</a><a class="navbar-item" href="/categories">分类</a><a class="navbar-item" href="/tags">标签</a><a class="navbar-item" href="/about">关于</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜索" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/img/agent-loop-cover.png" alt="手把手看 Agent Loop：一个循环如何驱动 AI 智能体"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2026-06-01T02:00:00.000Z" title="2026/6/1 10:00:00">2026-06-01</time>发表</span><span class="level-item"><time dateTime="2026-06-01T02:00:00.000Z" title="2026/6/1 10:00:00">2026-06-01</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">14 分钟读完 (大约2167个字)</span></div></div><h1 class="title is-3 is-size-4-mobile">手把手看 Agent Loop：一个循环如何驱动 AI 智能体</h1><div class="content"><blockquote>
+<p>本文用一段真实的 Agent Loop 执行过程，展示 AI 编码智能体的核心——<strong>一个循环如何让模型持续思考、行动、完成任务</strong>。</p>
+</blockquote>
+<hr>
+<h2 id="一、Agent-Loop：核心概念"><a href="#一、Agent-Loop：核心概念" class="headerlink" title="一、Agent Loop：核心概念"></a>一、Agent Loop：核心概念</h2><p>整个 AI 编码智能体的秘密就在一个循环里：</p>
+<figure class="highlight smali"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs smali">while stop_reason == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>    response = LLM(messages, tools)   <span class="hljs-comment"># 模型决定：要不要调工具？调什么？</span><br>   <span class="hljs-built_in"> execute </span>tools                      <span class="hljs-comment"># 执行模型要求的命令</span><br>    append results back to messages    <span class="hljs-comment"># 把结果喂回去，让模型继续思考</span><br></code></pre></td></tr></table></figure>
+
+<p>只有两种信号：</p>
+<table>
+<thead>
+<tr>
+<th>信号</th>
+<th>含义</th>
+<th>循环结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>stop_reason == &quot;tool_use&quot;</code></td>
+<td>模型说”我要调工具”</td>
+<td>执行工具 → 继续循环</td>
+</tr>
+<tr>
+<td><code>stop_reason != &quot;tool_use&quot;</code></td>
+<td>模型说”我做完了”</td>
+<td>退出循环，返回结果</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="二、核心代码"><a href="#二、核心代码" class="headerlink" title="二、核心代码"></a>二、核心代码</h2><p>以下是从 <code>learn-claude-code/s01_agent_loop/code.py</code> 中提取的核心逻辑（去掉调试打印后不到 20 行）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">agent_loop</span>(<span class="hljs-params">messages: <span class="hljs-built_in">list</span></span>):<br>    <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>        <span class="hljs-comment"># 1. 把消息发给模型</span><br>        response = client.messages.create(<br>            model=MODEL, system=SYSTEM, messages=messages,<br>            tools=TOOLS, max_tokens=<span class="hljs-number">8000</span>,<br>        )<br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;assistant&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: response.content&#125;)<br>        <br>        <span class="hljs-comment"># 2. 判断是否继续</span><br>        <span class="hljs-keyword">if</span> response.stop_reason != <span class="hljs-string">&quot;tool_use&quot;</span>:<br>            <span class="hljs-keyword">return</span>  <span class="hljs-comment"># 模型不调工具了，结束</span><br>        <br>        <span class="hljs-comment"># 3. 执行工具，收集结果</span><br>        results = []<br>        <span class="hljs-keyword">for</span> block <span class="hljs-keyword">in</span> response.content:<br>            <span class="hljs-keyword">if</span> block.<span class="hljs-built_in">type</span> == <span class="hljs-string">&quot;tool_use&quot;</span>:<br>                output = run_bash(block.<span class="hljs-built_in">input</span>[<span class="hljs-string">&quot;command&quot;</span>])<br>                results.append(&#123;<br>                    <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;tool_result&quot;</span>,<br>                    <span class="hljs-string">&quot;tool_use_id&quot;</span>: block.<span class="hljs-built_in">id</span>,<br>                    <span class="hljs-string">&quot;content&quot;</span>: output,<br>                &#125;)<br>        <br>        <span class="hljs-comment"># 4. 把结果喂回去，继续循环</span><br>        messages.append(&#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: results&#125;)<br></code></pre></td></tr></table></figure>
+
+<p>循环过程：</p>
+<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">用户提问 → <span class="hljs-keyword">LLM </span>推理 → 是否调工具？<br>    ├─ 否 → 返回回答 ✓<br>    └─ 是 → 执行命令 → 结果送回 <span class="hljs-keyword">LLM </span>→ 继续循环<br></code></pre></td></tr></table></figure>
+
+<p>模型负责<strong>决策</strong>（要不要调、调什么），harness 负责<strong>执行</strong>（调了就跑、结果喂回去）。这就是 Agent 模式的核心——<strong>ReAct（Reasoning + Acting）</strong>。</p>
+<hr>
+<h2 id="三、实战：一段完整的-Agent-Loop-过程"><a href="#三、实战：一段完整的-Agent-Loop-过程" class="headerlink" title="三、实战：一段完整的 Agent Loop 过程"></a>三、实战：一段完整的 Agent Loop 过程</h2><p>我向智能体提了一个问题：</p>
+<blockquote>
+<p><strong>我：</strong> 当前目录下 code.py 有多少行代码，主要功能是什么？</p>
+</blockquote>
+<p>AI 并不知道答案，它必须自己去探索。下面是完整的执行过程。</p>
+<hr>
+<h3 id="第-1-轮：尝试直接统计"><a href="#第-1-轮：尝试直接统计" class="headerlink" title="第 1 轮：尝试直接统计"></a>第 1 轮：尝试直接统计</h3><p>模型决定先看看行数。它用 <code>wc -l</code> 直接统计：</p>
+<figure class="highlight nix"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs nix">━ 发送给模型的 messages (循环第 <span class="hljs-number">1</span> 轮) ━<br>  <span class="hljs-params">system:</span> You are a coding agent at <span class="hljs-symbol">/home/yl/work/agent_2026/agent_learn_hub/learn-claude-code.</span> Use bash to solve tasks. Act, don&#x27;t explain.<br>  messages 共 <span class="hljs-number">1</span> 条:<br>    [<span class="hljs-number">0</span>] role<span class="hljs-operator">=</span>user  | 当前目录下 code.py 有多少行代码，主要功能是什么？<br><br>─ 模型返回 (循环第 <span class="hljs-number">1</span> 轮) ─<br>  <span class="hljs-params">model:</span>         claude-sonnet-<span class="hljs-number">4</span><span class="hljs-operator">-</span><span class="hljs-number">20250514</span><br>  <span class="hljs-params">stop_reason:</span>   tool_use<br><br>  content[<span class="hljs-number">0</span>]:<br>    <span class="hljs-params">type:</span> tool_use<br>    <span class="hljs-params">name:</span> bash<br>    <span class="hljs-params">input:</span> &#123;<span class="hljs-string">&quot;command&quot;</span>: <span class="hljs-string">&quot;wc -l &lt; code.py&quot;</span>&#125;<br><br>🔄 stop_reason<span class="hljs-operator">=</span>&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 模型第一次尝试：<code>wc -l &lt; code.py</code>。直截了当——先看文件存不存在、多少行。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">wc</span> -l &lt; code.py<br>/bin/sh: 1: cannot open code.py: No such file<br></code></pre></td></tr></table></figure>
+
+<p><strong>出错了！</strong> 当前目录没有 <code>code.py</code>。模型得到这个错误后，它没有放弃——而是进入下一轮，调整策略。</p>
+<hr>
+<h3 id="第-2-轮：换方式尝试"><a href="#第-2-轮：换方式尝试" class="headerlink" title="第 2 轮：换方式尝试"></a>第 2 轮：换方式尝试</h3><p>模型收到”文件不存在”的错误，决定再试试 <code>cat</code>：</p>
+<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 2 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">用户想知道当前目录下 code.py 文件有多少行代码...</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;cat code.py&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 注意！这一轮多了 <code>thinking</code> 块——模型在”思考”。它意识到刚才失败了，换另一种方式继续。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">cat</span> code.py<br><span class="hljs-built_in">cat</span>: code.py: 没有那个文件或目录<br></code></pre></td></tr></table></figure>
+
+<p><strong>还是找不到。</strong> 连续两次直接访问都失败了。模型需要改变策略——不再假设文件在当前目录，而是先看看目录里有什么。</p>
+<hr>
+<h3 id="第-3-轮：探索目录结构"><a href="#第-3-轮：探索目录结构" class="headerlink" title="第 3 轮：探索目录结构"></a>第 3 轮：探索目录结构</h3><p>模型意识到直接找不行，需要先了解当前环境：</p>
+<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 3 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">看起来当前目录下没有 code.py 文件。让我先看看当前目录下有什么文件。</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;ls -la&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 模型”推理”出来了：当前目录没有这个文件，那需要先看目录结构。这是 ReAct 模式的关键——模型能根据结果动态调整下一步。</p>
+</blockquote>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ <span class="hljs-built_in">ls</span> -la<br>总计 244<br>drwxrwxr-x 29 yl yl  4096  5月 29 17:37 .<br>drwxrwxr-x  7 yl yl  4096  5月 29 14:58 ..<br>drwxrwxr-x  2 yl yl  4096  5月 29 14:53 agents<br>-rw-rw-r--  1 yl yl  9842  5月 29 17:37 blog-s01-agent-loop.md<br>drwxrwxr-x  2 yl yl  4096  5月 29 14:53 s01_agent_loop<br>...<br></code></pre></td></tr></table></figure>
+
+<p>模型看到目录结构了——这是一个多章节项目，每个 <code>s*</code> 目录下可能有自己的 <code>code.py</code>。</p>
+<hr>
+<h3 id="第-4-轮：全局搜索目标文件"><a href="#第-4-轮：全局搜索目标文件" class="headerlink" title="第 4 轮：全局搜索目标文件"></a>第 4 轮：全局搜索目标文件</h3><p>有了目录结构信息，模型决定在整个项目中搜索所有 <code>code.py</code>：</p>
+<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">─ 模型返回 (循环第 4 轮) ─</span><br><span class="hljs-attribute">  model</span><span class="hljs-punctuation">:</span> <span class="hljs-string">        claude-sonnet-4-20250514</span><br>  <span class="hljs-attribute">stop_reason</span><span class="hljs-punctuation">:</span> <span class="hljs-string">  tool_use</span><br><br>  <span class="hljs-attribute">content[0]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">thinking</span><br>    <span class="hljs-attribute">thinking</span><span class="hljs-punctuation">:</span> <span class="hljs-string">有很多 code.py 文件...</span><br>    <br>  <span class="hljs-attribute">content[1]</span><span class="hljs-punctuation">:</span><br>    <span class="hljs-attribute">type</span><span class="hljs-punctuation">:</span> <span class="hljs-string">tool_use</span><br>    <span class="hljs-attribute">name</span><span class="hljs-punctuation">:</span> <span class="hljs-string">bash</span><br>    <span class="hljs-attribute">input</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&#123;&quot;command&quot;: &quot;find . -name &#x27;code.py&#x27; -type f 2&gt;/dev/null&quot;&#125;</span><br><br>🔄 stop_reason=&#x27;tool_use&#x27; → 执行工具后继续循环<br></code></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ find . -name <span class="hljs-string">&#x27;code.py&#x27;</span> -<span class="hljs-built_in">type</span> f 2&gt;/dev/null<br>./s17_autonomous_agents/code.py<br>./s15_agent_teams/code.py<br>./s20_comprehensive/code.py<br>./s07_skill_loading/code.py<br>./s03_permission/code.py<br>./s02_tool_use/code.py<br>./s18_worktree_isolation/code.py<br>./s06_subagent/code.py<br>...<br></code></pre></td></tr></table></figure>
+
+<p>好，找到了 <strong>20 个</strong> <code>code.py</code>！现在模型有了完整的信息。</p>
+<hr>
+<h3 id="第-5-轮：综合回答"><a href="#第-5-轮：综合回答" class="headerlink" title="第 5 轮：综合回答"></a>第 5 轮：综合回答</h3><p>模型收集了所有信息，现在可以给出最终答案了：</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><code class="hljs stylus">─ 模型返回 (循环第 <span class="hljs-number">5</span> 轮) ─<br>  model:         claude-sonnet-<span class="hljs-number">4</span>-<span class="hljs-number">20250514</span><br>  stop_reason:   end_turn<br><br>  <span class="hljs-attribute">content</span>[<span class="hljs-number">0</span>]:<br>    type: <span class="hljs-selector-tag">text</span><br>    <span class="hljs-selector-tag">text</span>: 当前目录下并没有 <span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span> 文件。<br><br>不过在项目的各个子目录中找到了 <span class="hljs-number">20</span> 个 <span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span> 文件，分别位于：<br>- s01_agent_loop/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- s02_tool_use/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- s03_permission/<span class="hljs-selector-tag">code</span><span class="hljs-selector-class">.py</span><br>- ...<br><br>✅ stop_reason=<span class="hljs-string">&#x27;end_turn&#x27;</span> → 循环结束!<br>总循环轮数: <span class="hljs-number">4</span><br></code></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <code>stop_reason</code> 变成了 <code>end_turn</code>——模型不再调用工具了，认为任务已经完成，直接输出文本回答。循环自然终结。</p>
+</blockquote>
+<hr>
+<h2 id="四、全过程复盘"><a href="#四、全过程复盘" class="headerlink" title="四、全过程复盘"></a>四、全过程复盘</h2><h3 id="执行路径一览"><a href="#执行路径一览" class="headerlink" title="执行路径一览"></a>执行路径一览</h3><table>
+<thead>
+<tr>
+<th>轮次</th>
+<th>模型在想什么</th>
+<th>调用了什么</th>
+<th>结果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>R1</td>
+<td>先看文件行数</td>
+<td><code>wc -l &lt; code.py</code></td>
+<td>❌ 文件不存在</td>
+</tr>
+<tr>
+<td>R2</td>
+<td>再试一种方式</td>
+<td><code>cat code.py</code></td>
+<td>❌ 还是不存在</td>
+</tr>
+<tr>
+<td>R3</td>
+<td>看看目录结构</td>
+<td><code>ls -la</code></td>
+<td>✅ 看到 29 个子目录</td>
+</tr>
+<tr>
+<td>R4</td>
+<td>全局搜索</td>
+<td><code>find . -name &#39;code.py&#39;</code></td>
+<td>✅ 找到 20 个文件</td>
+</tr>
+<tr>
+<td>R5</td>
+<td>综合信息，直接回答</td>
+<td>无 (end_turn)</td>
+<td>✅ 循环结束</td>
+</tr>
+</tbody></table>
+<h3 id="关键观察"><a href="#关键观察" class="headerlink" title="关键观察"></a>关键观察</h3><p><strong>1. 错误不是终点，而是信号</strong></p>
+<p><code>wc -l</code> 返回错误后，模型没有崩溃——它把错误当成新信息，调整策略继续尝试。这是 Agent 模式与普通程序最大的区别：<strong>错误被喂回模型，让模型自己修正</strong>。</p>
+<p><strong>2. 思维链（Chain-of-Thought）自动涌现</strong></p>
+<p>第 2 轮开始出现了 <code>thinking</code> 块，模型在公开自己的推理过程：”看起来当前目录下没有 code.py 文件。让我先看看当前目录下有什么文件。” 这不是提示词要求的——是模型自然习得的推理能力。</p>
+<p><strong>3. 从直接到迂回，策略动态调整</strong></p>
+<p>模型的三次尝试策略越来越聪明：</p>
+<ul>
+<li>R1：直接访问（<code>wc -l</code>）</li>
+<li>R2：换个方式访问（<code>cat</code>）</li>
+<li>R3：先了解环境（<code>ls</code>），再精确定位（<code>find</code>）</li>
+</ul>
+<p>这种”失败 → 调整 → 再尝试”的迭代过程，正是人类工程师面对未知问题时的自然反应。</p>
+<p><strong>4. 循环次数&#x3D;智能程度</strong></p>
+<p>这个例子跑了 4 轮。更复杂的任务可能跑几十轮甚至上百轮。每一轮都是：<strong>模型推理 → 行动 → 观察结果 → 再次推理</strong>。</p>
+<hr>
+<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><p>Agent Loop 的核心哲学：</p>
+<blockquote>
+<p><strong>人类给方向，AI 负责执行路径上的所有细节决策。</strong></p>
+</blockquote>
+<ul>
+<li>你不需要告诉它”先用 ls，再用 find”——它自己会决定</li>
+<li>你不需要处理错误——它收到错误会自动调整策略</li>
+<li>你只需要一个循环、一个工具，就能让模型持续行动</li>
+</ul>
+<p>这个最小的 20 行 <code>while True</code>，就是所有 AI 编码智能体的基础。后面的安全、权限、记忆、协作等机制，都是在这之上叠加的图层。但核心永不变：</p>
+<p><strong>循环不终结，智能不停止。</strong></p>
+<hr>
+<p><em>本文基于 <a target="_blank" rel="noopener" href="https://github.com/anthropics/learn-claude-code">learn-claude-code</a> 项目 s01_agent_loop 的真实运行过程。</em></p>
+</div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/Claude-Code/">Claude Code</a><a class="link-muted mr-2" rel="tag" href="/tags/AI-Agent/">AI Agent</a><a class="link-muted mr-2" rel="tag" href="/tags/Agent-Loop/">Agent Loop</a><a class="link-muted mr-2" rel="tag" href="/tags/%E5%AE%9E%E6%88%98/">实战</a></div><!--!--></article></div><!--!--><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2026/06/01/blog-s02-tool-use/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">工具定义与分发：Agent 的能力从哪来</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2026/05/29/tailScale---fb76d0a8-d711-487b-b26b-a7477e2681bf/"><span class="level-item"> </span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="/img/avatar.png" alt="Solwarda"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">Solwarda</p><p class="is-size-6 is-block">个人博客</p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives/"><p class="title">7</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分类</p><a href="/categories/"><p class="title">3</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">标签</p><a href="/tags/"><p class="title">19</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/Solwarda" target="_blank" rel="me noopener">关注我</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="me noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分类</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/%E6%8A%80%E6%9C%AF%E6%8E%A2%E7%B4%A2/"><span class="level-start"><span class="level-item">技术探索</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-02T06:00:00.000Z">2026-06-02</time></p><p class="title"><a href="/2026/06/02/blog-s05-todo-write/">不给 Agent 加能力，只加结构 — s05 TodoWrite 学习笔记</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T08:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s04-hooks/">Hooks 机制：把扩展挂在循环外，而不是塞进循环里</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T06:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s02-tool-use/">工具定义与分发：Agent 的能力从哪来</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-06-01T02:00:00.000Z">2026-06-01</time></p><p class="title"><a href="/2026/06/01/blog-s01-agent-loop/">手把手看 Agent Loop：一个循环如何驱动 AI 智能体</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2026-05-29T10:02:09.329Z">2026-05-29</time></p><p class="title"><a href="/2026/05/29/tailScale---fb76d0a8-d711-487b-b26b-a7477e2681bf/"> </a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">归档</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2026/06/"><span class="level-start"><span class="level-item">六月 2026</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/05/"><span class="level-start"><span class="level-item">五月 2026</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2026/03/"><span class="level-start"><span class="level-item">三月 2026</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">标签</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/AI-Agent/"><span class="tag">AI Agent</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ARM64/"><span class="tag">ARM64</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Agent-Loop/"><span class="tag">Agent Loop</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Claude-Code/"><span class="tag">Claude Code</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/HTTP-API/"><span class="tag">HTTP API</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Hooks/"><span class="tag">Hooks</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/OpenClaw/"><span class="tag">OpenClaw</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Skill/"><span class="tag">Skill</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/TodoWrite/"><span class="tag">TodoWrite</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tool-Definition/"><span class="tag">Tool Definition</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Tool-Use/"><span class="tag">Tool Use</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unpigz/"><span class="tag">unpigz</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E4%BA%8B%E4%BB%B6%E5%9B%9E%E8%B0%83/"><span class="tag">事件回调</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E4%BB%BB%E5%8A%A1%E7%AE%A1%E7%90%86/"><span class="tag">任务管理</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E5%AE%9E%E6%88%98/"><span class="tag">实战</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0/"><span class="tag">文件上传</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E8%A7%84%E5%88%92/"><span class="tag">规划</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/%E9%BA%92%E9%BA%9F/"><span class="tag">麒麟</span><span class="tag">1</span></a></div></div></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.svg" alt="My Blog" height="28"></a><p class="is-size-7"><span>&copy; 2026 Solwarda</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2026 Solwarda</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Github" href="https://github.com/Solwarda"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net"></script><script src="https://cdn.jsdelivr.net" defer></script><script>moment.locale("zh-cn");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script data-pjax src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到顶端" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script data-pjax src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net" defer></script><script src="https://cdn.jsdelivr.net" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><script src="https://cdn.jsdelivr.net"></script><script src="/js/pjax.js"></script><!--!--><!--!--><!--!--><script data-pjax src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="想要查找什么..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script data-pjax src="/js/insight.js" defer></script><script data-pjax>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"想要查找什么...","untitled":"(无标题)","posts":"文章","pages":"页面","categories":"分类","tags":"标签"});
+        });</script></body></html>
